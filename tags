@@ -1,0 +1,438 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ACLOCAL	Makefile	/^ACLOCAL = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/missing aclocal-1.15$/;"	m
+ACLOCAL_M4	Makefile	/^ACLOCAL_M4 = $(top_srcdir)\/aclocal.m4$/;"	m
+AMTAR	Makefile	/^AMTAR = $${TAR-tar}$/;"	m
+AM_DEFAULT_VERBOSITY	Makefile	/^AM_DEFAULT_VERBOSITY = 1$/;"	m
+AM_RECURSIVE_TARGETS	Makefile	/^AM_RECURSIVE_TARGETS = cscope$/;"	m
+AM_V_CC	Makefile	/^AM_V_CC = $(am__v_CC_$(V))$/;"	m
+AM_V_CCLD	Makefile	/^AM_V_CCLD = $(am__v_CCLD_$(V))$/;"	m
+AM_V_GEN	Makefile	/^AM_V_GEN = $(am__v_GEN_$(V))$/;"	m
+AM_V_P	Makefile	/^AM_V_P = $(am__v_P_$(V))$/;"	m
+AM_V_at	Makefile	/^AM_V_at = $(am__v_at_$(V))$/;"	m
+AM_V_lt	Makefile	/^AM_V_lt = $(am__v_lt_$(V))$/;"	m
+AUTOCONF	Makefile	/^AUTOCONF = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/missing autoconf$/;"	m
+AUTOHEADER	Makefile	/^AUTOHEADER = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/missing autoheader$/;"	m
+AUTOMAKE	Makefile	/^AUTOMAKE = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/missing automake-1.15$/;"	m
+AUTOMAKE_OPTIONS	Makefile	/^AUTOMAKE_OPTIONS = foreign dist-bzip2$/;"	m
+AWK	Makefile	/^AWK = gawk$/;"	m
+BAD_OPTION	getopt.c	123;"	d	file:
+CASE	match.c	19;"	d	file:
+CC	Makefile	/^CC = gcc$/;"	m
+CCDEPMODE	Makefile	/^CCDEPMODE = depmode=gcc3$/;"	m
+CCLD	Makefile	/^CCLD = $(CC)$/;"	m
+CFLAGS	Makefile	/^CFLAGS = -g -O2$/;"	m
+COMPILE	Makefile	/^COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \\$/;"	m
+CONFIG_CLEAN_FILES	Makefile	/^CONFIG_CLEAN_FILES =$/;"	m
+CONFIG_CLEAN_VPATH_FILES	Makefile	/^CONFIG_CLEAN_VPATH_FILES =$/;"	m
+CONFIG_HEADER	Makefile	/^CONFIG_HEADER = config.h$/;"	m
+CPP	Makefile	/^CPP = gcc -E$/;"	m
+CPPFLAGS	Makefile	/^CPPFLAGS = $/;"	m
+CSCOPE	Makefile	/^CSCOPE = cscope$/;"	m
+CTAGS	Makefile	/^CTAGS = ctags$/;"	m
+CYGPATH_W	Makefile	/^CYGPATH_W = echo$/;"	m
+ConnectionInfo	rinetd.h	/^typedef struct _connection_info ConnectionInfo;$/;"	t	typeref:struct:_connection_info
+DATA	Makefile	/^DATA = $(sysconf_DATA)$/;"	m
+DEFAULT_INCLUDES	Makefile	/^DEFAULT_INCLUDES = -I.$/;"	m
+DEFS	Makefile	/^DEFS = -DHAVE_CONFIG_H$/;"	m
+DEPDIR	Makefile	/^DEPDIR = .deps$/;"	m
+DISTFILES	Makefile	/^DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)$/;"	m
+DIST_ARCHIVES	Makefile	/^DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.bz2$/;"	m
+DIST_COMMON	Makefile	/^DIST_COMMON = $(srcdir)\/Makefile.am $(top_srcdir)\/configure \\$/;"	m
+DIST_SOURCES	Makefile	/^DIST_SOURCES = $(rinetd_SOURCES)$/;"	m
+DIST_TARGETS	Makefile	/^DIST_TARGETS = dist-bzip2 dist-gzip$/;"	m
+ECHO_C	Makefile	/^ECHO_C = $/;"	m
+ECHO_N	Makefile	/^ECHO_N = -n$/;"	m
+ECHO_T	Makefile	/^ECHO_T = $/;"	m
+EGREP	Makefile	/^EGREP = \/usr\/bin\/grep -E$/;"	m
+ETAGS	Makefile	/^ETAGS = etags$/;"	m
+EXEEXT	Makefile	/^EXEEXT = $/;"	m
+EXTRA_DIST	Makefile	/^EXTRA_DIST = bootstrap CHANGES index.html \\$/;"	m
+FD_ISSET_EXT	rinetd.c	588;"	d	file:
+FD_SET_EXT	rinetd.c	587;"	d	file:
+FD_ZERO_EXT	rinetd.c	586;"	d	file:
+GREP	Makefile	/^GREP = \/usr\/bin\/grep$/;"	m
+GZIP_ENV	Makefile	/^GZIP_ENV = --best$/;"	m
+GetLastError	rinetd.c	/^static inline int GetLastError(void) {$/;"	f	file:
+HAVE_ARPA_INET_H	config.h	5;"	d
+HAVE_DAEMON	config.h	8;"	d
+HAVE_ERRNO_H	config.h	11;"	d
+HAVE_FCNTL_H	config.h	14;"	d
+HAVE_FORK	config.h	17;"	d
+HAVE_GETHOSTBYNAME	config.h	20;"	d
+HAVE_INTTYPES_H	config.h	23;"	d
+HAVE_MEMORY_H	config.h	26;"	d
+HAVE_MEMSET	config.h	29;"	d
+HAVE_NETDB_H	config.h	32;"	d
+HAVE_NETINET_IN_H	config.h	35;"	d
+HAVE_SELECT	config.h	38;"	d
+HAVE_SIGACTION	config.h	41;"	d
+HAVE_SOCKET	config.h	44;"	d
+HAVE_SOCKLEN_T	config.h	47;"	d
+HAVE_STDINT_H	config.h	50;"	d
+HAVE_STDLIB_H	config.h	53;"	d
+HAVE_STRFTIME	config.h	56;"	d
+HAVE_STRINGS_H	config.h	59;"	d
+HAVE_STRING_H	config.h	62;"	d
+HAVE_STRSTR	config.h	65;"	d
+HAVE_SYSLOG_H	config.h	68;"	d
+HAVE_SYS_IOCTL_H	config.h	71;"	d
+HAVE_SYS_SOCKET_H	config.h	74;"	d
+HAVE_SYS_STAT_H	config.h	77;"	d
+HAVE_SYS_TIME_H	config.h	80;"	d
+HAVE_SYS_TYPES_H	config.h	83;"	d
+HAVE_UNISTD_H	config.h	86;"	d
+HAVE_VFORK	config.h	89;"	d
+HAVE_WORKING_FORK	config.h	95;"	d
+HAVE_WORKING_VFORK	config.h	98;"	d
+INSTALL	Makefile	/^INSTALL = \/usr\/bin\/install -c$/;"	m
+INSTALL_DATA	Makefile	/^INSTALL_DATA = ${INSTALL} -m 644$/;"	m
+INSTALL_HEADER	Makefile	/^INSTALL_HEADER = $(INSTALL_DATA)$/;"	m
+INSTALL_PROGRAM	Makefile	/^INSTALL_PROGRAM = ${INSTALL}$/;"	m
+INSTALL_SCRIPT	Makefile	/^INSTALL_SCRIPT = ${INSTALL}$/;"	m
+INSTALL_STRIP_PROGRAM	Makefile	/^INSTALL_STRIP_PROGRAM = $(install_sh) -c -s$/;"	m
+INVALID_SOCKET	rinetd.c	27;"	d	file:
+INVALID_SOCKET	rinetd.c	54;"	d	file:
+LDFLAGS	Makefile	/^LDFLAGS = $/;"	m
+LIBOBJS	Makefile	/^LIBOBJS = $/;"	m
+LIBS	Makefile	/^LIBS = $/;"	m
+LINK	Makefile	/^LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@$/;"	m
+LOG_ERR	rinetd.c	14;"	d	file:
+LOG_INFO	rinetd.c	15;"	d	file:
+LTLIBOBJS	Makefile	/^LTLIBOBJS = $/;"	m
+MAKEINFO	Makefile	/^MAKEINFO = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/missing makeinfo$/;"	m
+MANS	Makefile	/^MANS = $(man_MANS)$/;"	m
+MATCH_H	match.h	2;"	d
+MKDIR_P	Makefile	/^MKDIR_P = \/usr\/bin\/mkdir -p$/;"	m
+NORMAL_INSTALL	Makefile	/^NORMAL_INSTALL = :$/;"	m
+NORMAL_UNINSTALL	Makefile	/^NORMAL_UNINSTALL = :$/;"	m
+NROFF	Makefile	/^NROFF = nroff$/;"	m
+OBJEXT	Makefile	/^OBJEXT = o$/;"	m
+PACKAGE	Makefile	/^PACKAGE = rinetd$/;"	m
+PACKAGE_BUGREPORT	Makefile	/^PACKAGE_BUGREPORT = sam@hocevar.net$/;"	m
+PACKAGE_BUGREPORT	config.h	101;"	d
+PACKAGE_NAME	Makefile	/^PACKAGE_NAME = rinetd$/;"	m
+PACKAGE_NAME	config.h	104;"	d
+PACKAGE_STRING	Makefile	/^PACKAGE_STRING = rinetd 0.62.1sam$/;"	m
+PACKAGE_STRING	config.h	107;"	d
+PACKAGE_TARNAME	Makefile	/^PACKAGE_TARNAME = rinetd$/;"	m
+PACKAGE_TARNAME	config.h	110;"	d
+PACKAGE_URL	Makefile	/^PACKAGE_URL = $/;"	m
+PACKAGE_URL	config.h	113;"	d
+PACKAGE_VERSION	Makefile	/^PACKAGE_VERSION = 0.62.1sam$/;"	m
+PACKAGE_VERSION	config.h	116;"	d
+PATH_SEPARATOR	Makefile	/^PATH_SEPARATOR = :$/;"	m
+PERMUTE	getopt.c	/^  REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER$/;"	e	enum:__anon2	file:
+PERROR	rinetd.c	75;"	d	file:
+PERROR	rinetd.c	77;"	d	file:
+POST_INSTALL	Makefile	/^POST_INSTALL = :$/;"	m
+POST_UNINSTALL	Makefile	/^POST_UNINSTALL = :$/;"	m
+PRE_INSTALL	Makefile	/^PRE_INSTALL = :$/;"	m
+PRE_UNINSTALL	Makefile	/^PRE_UNINSTALL = :$/;"	m
+PROGRAMS	Makefile	/^PROGRAMS = $(sbin_PROGRAMS)$/;"	m
+REQUIRE_ORDER	getopt.c	/^  REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER$/;"	e	enum:__anon2	file:
+RETSIGTYPE	config.h	119;"	d
+RETSIGTYPE	rinetd.c	6;"	d	file:
+RETURN_IN_ORDER	getopt.c	/^  REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER$/;"	e	enum:__anon2	file:
+RINETD_BUFFER_SIZE	rinetd.h	/^static int const RINETD_BUFFER_SIZE = 16384;$/;"	v
+RINETD_CONFIG_FILE	rinetd.h	6;"	d
+RINETD_LISTEN_BACKLOG	rinetd.h	/^static int const RINETD_LISTEN_BACKLOG = 128;$/;"	v
+RINETD_PID_FILE	rinetd.h	7;"	d
+RinetdOptions	rinetd.h	/^typedef struct _rinetd_options RinetdOptions;$/;"	t	typeref:struct:_rinetd_options
+Rule	rinetd.h	/^typedef struct _rule Rule;$/;"	t	typeref:struct:_rule
+SET_MAKE	Makefile	/^SET_MAKE = $/;"	m
+SHELL	Makefile	/^SHELL = \/bin\/sh$/;"	m
+SOCKET	rinetd.c	68;"	d	file:
+SOCKET_ERROR	rinetd.c	28;"	d	file:
+SOCKET_ERROR	rinetd.c	55;"	d	file:
+SOURCES	Makefile	/^SOURCES = $(rinetd_SOURCES)$/;"	m
+STDC_HEADERS	config.h	122;"	d
+STRIP	Makefile	/^STRIP = $/;"	m
+ServerInfo	rinetd.h	/^typedef struct _server_info ServerInfo;$/;"	t	typeref:struct:_server_info
+Socket	rinetd.h	/^typedef struct _socket Socket;$/;"	t	typeref:struct:_socket
+TIME_WITH_SYS_TIME	config.h	125;"	d
+VERSION	Makefile	/^VERSION = 0.62.1sam$/;"	m
+WSAEAGAIN	rinetd.c	50;"	d	file:
+WSAEAGAIN	rinetd.c	65;"	d	file:
+WSAEINPROGRESS	rinetd.c	66;"	d	file:
+WSAEINTR	rinetd.c	67;"	d	file:
+WSAEWOULDBLOCK	rinetd.c	64;"	d	file:
+_GETOPT_H	getopt.h	21;"	d
+_NO_PROTO	getopt.c	37;"	d	file:
+_connection_info	rinetd.h	/^struct _connection_info$/;"	s
+_getopt_internal	getopt.c	/^_getopt_internal (argc, argv, optstring, longopts, longind, long_only)$/;"	f
+_rinetd_options	rinetd.h	/^struct _rinetd_options$/;"	s
+_rule	rinetd.h	/^struct _rule$/;"	s
+_server_info	rinetd.h	/^struct _server_info {$/;"	s
+_socket	rinetd.h	/^struct _socket$/;"	s
+abs_builddir	Makefile	/^abs_builddir = \/home\/vagrant\/rinetd$/;"	m
+abs_srcdir	Makefile	/^abs_srcdir = \/home\/vagrant\/rinetd$/;"	m
+abs_top_builddir	Makefile	/^abs_top_builddir = \/home\/vagrant\/rinetd$/;"	m
+abs_top_srcdir	Makefile	/^abs_top_srcdir = \/home\/vagrant\/rinetd$/;"	m
+ac_ct_CC	Makefile	/^ac_ct_CC = gcc$/;"	m
+ac_fn_c_check_func	configure	/^ac_fn_c_check_func ()$/;"	f
+ac_fn_c_check_header_compile	configure	/^ac_fn_c_check_header_compile ()$/;"	f
+ac_fn_c_check_header_mongrel	configure	/^ac_fn_c_check_header_mongrel ()$/;"	f
+ac_fn_c_check_type	configure	/^ac_fn_c_check_type ()$/;"	f
+ac_fn_c_try_compile	configure	/^ac_fn_c_try_compile ()$/;"	f
+ac_fn_c_try_cpp	configure	/^ac_fn_c_try_cpp ()$/;"	f
+ac_fn_c_try_link	configure	/^ac_fn_c_try_link ()$/;"	f
+ac_fn_c_try_run	configure	/^ac_fn_c_try_run ()$/;"	f
+aix_post_process_depfile	.auto/depcomp	/^aix_post_process_depfile ()$/;"	f
+allRules	rinetd.c	/^Rule *allRules = NULL;$/;"	v
+allRulesCount	rinetd.c	/^int allRulesCount = 0;$/;"	v
+allowRule	rinetd.h	/^	allowRule,$/;"	e	enum:ruleType
+am__CONFIG_DISTCLEAN_FILES	Makefile	/^am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \\$/;"	m
+am__DIST_COMMON	Makefile	/^am__DIST_COMMON = $(srcdir)\/Makefile.in $(srcdir)\/config.h.in \\$/;"	m
+am__aclocal_m4_deps	Makefile	/^am__aclocal_m4_deps = $(top_srcdir)\/configure.ac$/;"	m
+am__base_list	Makefile	/^am__base_list = \\$/;"	m
+am__can_run_installinfo	Makefile	/^am__can_run_installinfo = \\$/;"	m
+am__cd	Makefile	/^am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd$/;"	m
+am__configure_deps	Makefile	/^am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \\$/;"	m
+am__define_uniq_tagged_files	Makefile	/^am__define_uniq_tagged_files = \\$/;"	m
+am__depfiles_maybe	Makefile	/^am__depfiles_maybe = depfiles$/;"	m
+am__distuninstallcheck_listfiles	Makefile	/^am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \\$/;"	m
+am__include	Makefile	/^am__include = include$/;"	m
+am__install_max	Makefile	/^am__install_max = 40$/;"	m
+am__installdirs	Makefile	/^am__installdirs = "$(DESTDIR)$(sbindir)" "$(DESTDIR)$(man8dir)" \\$/;"	m
+am__is_gnu_make	Makefile	/^am__is_gnu_make = { \\$/;"	m
+am__leading_dot	Makefile	/^am__leading_dot = .$/;"	m
+am__make_dryrun	Makefile	/^am__make_dryrun = (target_option=n; $(am__make_running_with_option))$/;"	m
+am__make_keepgoing	Makefile	/^am__make_keepgoing = (target_option=k; $(am__make_running_with_option))$/;"	m
+am__make_running_with_option	Makefile	/^am__make_running_with_option = \\$/;"	m
+am__mv	Makefile	/^am__mv = mv -f$/;"	m
+am__nobase_list	Makefile	/^am__nobase_list = $(am__nobase_strip_setup); \\$/;"	m
+am__nobase_strip	Makefile	/^am__nobase_strip = \\$/;"	m
+am__nobase_strip_setup	Makefile	/^am__nobase_strip_setup = \\$/;"	m
+am__post_remove_distdir	Makefile	/^am__post_remove_distdir = $(am__remove_distdir)$/;"	m
+am__quote	Makefile	/^am__quote = $/;"	m
+am__remove_distdir	Makefile	/^am__remove_distdir = \\$/;"	m
+am__strip_dir	Makefile	/^am__strip_dir = f=`echo $$p | sed -e 's|^.*\/||'`;$/;"	m
+am__tagged_files	Makefile	/^am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \\$/;"	m
+am__tar	Makefile	/^am__tar = tar --format=ustar -chf - "$$tardir"$/;"	m
+am__uninstall_files_from_dir	Makefile	/^am__uninstall_files_from_dir = { \\$/;"	m
+am__uniquify_input	Makefile	/^am__uniquify_input = $(AWK) '\\$/;"	m
+am__untar	Makefile	/^am__untar = tar -xf -$/;"	m
+am__v_CCLD_	Makefile	/^am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_CCLD_0	Makefile	/^am__v_CCLD_0 = @echo "  CCLD    " $@;$/;"	m
+am__v_CCLD_1	Makefile	/^am__v_CCLD_1 = $/;"	m
+am__v_CC_	Makefile	/^am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_CC_0	Makefile	/^am__v_CC_0 = @echo "  CC      " $@;$/;"	m
+am__v_CC_1	Makefile	/^am__v_CC_1 = $/;"	m
+am__v_GEN_	Makefile	/^am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_GEN_0	Makefile	/^am__v_GEN_0 = @echo "  GEN     " $@;$/;"	m
+am__v_GEN_1	Makefile	/^am__v_GEN_1 = $/;"	m
+am__v_P_	Makefile	/^am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_P_0	Makefile	/^am__v_P_0 = false$/;"	m
+am__v_P_1	Makefile	/^am__v_P_1 = :$/;"	m
+am__v_at_	Makefile	/^am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_at_0	Makefile	/^am__v_at_0 = @$/;"	m
+am__v_at_1	Makefile	/^am__v_at_1 = $/;"	m
+am__v_lt_	Makefile	/^am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))$/;"	m
+am__v_lt_0	Makefile	/^am__v_lt_0 = --silent$/;"	m
+am__v_lt_1	Makefile	/^am__v_lt_1 = $/;"	m
+am__vpath_adj	Makefile	/^am__vpath_adj = case $$p in \\$/;"	m
+am__vpath_adj_setup	Makefile	/^am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;$/;"	m
+am_rinetd_OBJECTS	Makefile	/^am_rinetd_OBJECTS = rinetd-rinetd.$(OBJEXT) rinetd-match.$(OBJEXT)$/;"	m
+as_fn_append	config.status	/^  as_fn_append ()$/;"	f
+as_fn_append	configure	/^  as_fn_append ()$/;"	f
+as_fn_arith	config.status	/^  as_fn_arith ()$/;"	f
+as_fn_arith	configure	/^  as_fn_arith ()$/;"	f
+as_fn_error	config.status	/^as_fn_error ()$/;"	f
+as_fn_error	configure	/^as_fn_error ()$/;"	f
+as_fn_executable_p	config.status	/^as_fn_executable_p ()$/;"	f
+as_fn_executable_p	configure	/^as_fn_executable_p ()$/;"	f
+as_fn_exit	config.status	/^as_fn_exit ()$/;"	f
+as_fn_exit	configure	/^as_fn_exit ()$/;"	f
+as_fn_failure	configure	/^as_fn_failure () { as_fn_return 1; }$/;"	f
+as_fn_mkdir_p	config.status	/^as_fn_mkdir_p ()$/;"	f
+as_fn_mkdir_p	configure	/^as_fn_mkdir_p ()$/;"	f
+as_fn_ret_failure	configure	/^as_fn_ret_failure () { return 1; }$/;"	f
+as_fn_ret_success	configure	/^as_fn_ret_success () { return 0; }$/;"	f
+as_fn_set_status	config.status	/^as_fn_set_status ()$/;"	f
+as_fn_set_status	configure	/^as_fn_set_status ()$/;"	f
+as_fn_success	configure	/^as_fn_success () { as_fn_return 0; }$/;"	f
+as_fn_unset	config.status	/^as_fn_unset ()$/;"	f
+as_fn_unset	configure	/^as_fn_unset ()$/;"	f
+bindir	Makefile	/^bindir = ${exec_prefix}\/bin$/;"	m
+buffer	rinetd.h	/^	char *buffer;$/;"	m	struct:_socket
+build_alias	Makefile	/^build_alias = $/;"	m
+builddir	Makefile	/^builddir = .$/;"	m
+clearConfiguration	rinetd.c	/^static void clearConfiguration(void) {$/;"	f	file:
+closeServersocket	rinetd.c	/^static inline int closeServersocket(int s) {$/;"	f	file:
+closesocket	rinetd.c	/^static inline int closesocket(int s) {$/;"	f	file:
+coClosing	rinetd.h	/^	int coClosing;$/;"	m	struct:_connection_info
+coInfo	rinetd.c	/^ConnectionInfo *coInfo = NULL;$/;"	v
+coLog	rinetd.h	/^	int coLog;$/;"	m	struct:_connection_info
+coTotal	rinetd.c	/^int coTotal = 0;$/;"	v
+conf_file	rinetd.h	/^	char const *conf_file;$/;"	m	struct:_rinetd_options
+const	getopt.c	31;"	d	file:
+datadir	Makefile	/^datadir = ${datarootdir}$/;"	m
+datarootdir	Makefile	/^datarootdir = ${prefix}\/share$/;"	m
+denyRule	rinetd.h	/^	denyRule,$/;"	e	enum:ruleType
+depcomp	Makefile	/^depcomp = $(SHELL) $(top_srcdir)\/.auto\/depcomp$/;"	m
+distcleancheck_listfiles	Makefile	/^distcleancheck_listfiles = find . -type f -print$/;"	m
+distdir	Makefile	/^distdir = $(PACKAGE)-$(VERSION)$/;"	m
+distuninstallcheck_listfiles	Makefile	/^distuninstallcheck_listfiles = find . -type f -print$/;"	m
+docdir	Makefile	/^docdir = ${datarootdir}\/doc\/${PACKAGE_TARNAME}$/;"	m
+dvidir	Makefile	/^dvidir = ${docdir}$/;"	m
+exchange	getopt.c	/^exchange (argv)$/;"	f	file:
+exec_prefix	Makefile	/^exec_prefix = ${prefix}$/;"	m
+fd	rinetd.h	/^	SOCKET fd;$/;"	m	struct:_server_info
+fd	rinetd.h	/^	SOCKET fd;$/;"	m	struct:_socket
+findAvailableConnection	rinetd.c	/^static ConnectionInfo *findAvailableConnection(void)$/;"	f	file:
+first_nonopt	getopt.c	/^static int first_nonopt;$/;"	v	file:
+flag	getopt.h	/^  int *flag;$/;"	m	struct:option
+foreground	rinetd.h	/^	int foreground;$/;"	m	struct:_rinetd_options
+fromHost	rinetd.h	/^	char *fromHost, *toHost;$/;"	m	struct:_server_info
+fromPort	rinetd.h	/^	int fromPort, toPort;$/;"	m	struct:_server_info
+func_cl_dashL	.auto/compile	/^func_cl_dashL ()$/;"	f
+func_cl_dashl	.auto/compile	/^func_cl_dashl ()$/;"	f
+func_cl_wrapper	.auto/compile	/^func_cl_wrapper ()$/;"	f
+func_file_conv	.auto/compile	/^func_file_conv ()$/;"	f
+getAddress	rinetd.c	/^static int getAddress(char const *host, struct in_addr *iaddr)$/;"	f	file:
+getConfLine	rinetd.c	/^static int getConfLine(FILE *in, char *line, int space, int *lnum)$/;"	f	file:
+get_gmtoff	rinetd.c	/^static struct tm *get_gmtoff(int *tz) {$/;"	f	file:
+getopt	getopt.c	/^getopt (argc, argv, optstring)$/;"	f
+getopt_long	getopt.c	/^getopt_long (argc, argv, options, long_options, opt_index)$/;"	f
+give_advice	.auto/missing	/^give_advice ()$/;"	f
+globalRulesCount	rinetd.c	/^int globalRulesCount = 0;$/;"	v
+handleAccept	rinetd.c	/^static void handleAccept(ServerInfo const *srv)$/;"	f	file:
+handleClose	rinetd.c	/^static void handleClose(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+handleRead	rinetd.c	/^static void handleRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+handleServerClose	rinetd.c	/^static void handleServerClose(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+handleServerRead	rinetd.c	/^static void handleServerRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+handleServerWrite	rinetd.c	/^static void handleServerWrite(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+handleWrite	rinetd.c	/^static void handleWrite(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)$/;"	f	file:
+has_arg	getopt.h	/^  int has_arg;$/;"	m	struct:option
+host_alias	Makefile	/^host_alias = $/;"	m
+htmldir	Makefile	/^htmldir = ${docdir}$/;"	m
+hup	rinetd.c	/^RETSIGTYPE hup(int s)$/;"	f
+includedir	Makefile	/^includedir = ${prefix}\/include$/;"	m
+infodir	Makefile	/^infodir = ${datarootdir}\/info$/;"	m
+install_sh	Makefile	/^install_sh = ${SHELL} \/home\/vagrant\/rinetd\/.auto\/install-sh$/;"	m
+install_sh_DATA	Makefile	/^install_sh_DATA = $(install_sh) -c -m 644$/;"	m
+install_sh_PROGRAM	Makefile	/^install_sh_PROGRAM = $(install_sh) -c$/;"	m
+install_sh_SCRIPT	Makefile	/^install_sh_SCRIPT = $(install_sh) -c$/;"	m
+ioctlServersocket	rinetd.c	63;"	d	file:
+ioctlsocket	rinetd.c	62;"	d	file:
+last_nonopt	getopt.c	/^static int last_nonopt;$/;"	v	file:
+libdir	Makefile	/^libdir = ${exec_prefix}\/lib$/;"	m
+libexecdir	Makefile	/^libexecdir = ${exec_prefix}\/libexec$/;"	m
+local	rinetd.h	/^	Socket remote, local;$/;"	m	struct:_connection_info
+localAddr	rinetd.h	/^	struct in_addr localAddr;$/;"	m	struct:_server_info	typeref:struct:_server_info::in_addr
+localPort	rinetd.h	/^	unsigned short localPort;$/;"	m	struct:_server_info
+localedir	Makefile	/^localedir = ${datarootdir}\/locale$/;"	m
+localstatedir	Makefile	/^localstatedir = ${prefix}\/var$/;"	m
+logAcceptFailed	rinetd.c	/^	logAcceptFailed,$/;"	e	enum:__anon1	file:
+logDenied	rinetd.c	/^	logDenied,$/;"	e	enum:__anon1	file:
+logEvent	rinetd.c	/^static void logEvent(ConnectionInfo const *cnx, ServerInfo const *srv, int result)$/;"	f	file:
+logFile	rinetd.c	/^FILE *logFile = NULL;$/;"	v
+logFileName	rinetd.c	/^char *logFileName = NULL;$/;"	v
+logFormatCommon	rinetd.c	/^int logFormatCommon = 0;$/;"	v
+logLocalBindFailed	rinetd.c	/^	logLocalBindFailed,$/;"	e	enum:__anon1	file:
+logLocalClosedFirst	rinetd.c	/^	logLocalClosedFirst,$/;"	e	enum:__anon1	file:
+logLocalConnectFailed	rinetd.c	/^	logLocalConnectFailed,$/;"	e	enum:__anon1	file:
+logLocalSocketFailed	rinetd.c	/^	logLocalSocketFailed,$/;"	e	enum:__anon1	file:
+logMessages	rinetd.c	/^char const *logMessages[] = {$/;"	v
+logNotAllowed	rinetd.c	/^	logNotAllowed,$/;"	e	enum:__anon1	file:
+logOpened	rinetd.c	/^	logOpened,$/;"	e	enum:__anon1	file:
+logRemoteClosedFirst	rinetd.c	/^	logRemoteClosedFirst,$/;"	e	enum:__anon1	file:
+logUnknownError	rinetd.c	/^	logUnknownError = 0,$/;"	e	enum:__anon1	file:
+main	getopt.c	/^main (argc, argv)$/;"	f
+main	match.c	/^int main(int argc, char *argv[])$/;"	f
+main	rinetd.c	/^int main(int argc, char *argv[])$/;"	f
+make_dummy_depfile	.auto/depcomp	/^make_dummy_depfile ()$/;"	f
+man8dir	Makefile	/^man8dir = $(mandir)\/man8$/;"	m
+man_MANS	Makefile	/^man_MANS = rinetd.8$/;"	m
+mandir	Makefile	/^mandir = ${datarootdir}\/man$/;"	m
+match	match.c	/^int match(char const *sorig, char const *p)$/;"	f
+matchBody	match.c	/^int matchBody(char const *sorig, char const *p, int nocase)$/;"	f
+matchNoCase	match.c	/^int matchNoCase(char const *sorig, char const *p)$/;"	f
+maxfd	rinetd.c	/^int maxfd = 0;$/;"	v
+mkdir_p	Makefile	/^mkdir_p = $(MKDIR_P)$/;"	m
+mkinstalldirs	Makefile	/^mkinstalldirs = $(install_sh) -d$/;"	m
+my_index	getopt.c	/^my_index (str, chr)$/;"	f	file:
+my_index	getopt.c	166;"	d	file:
+my_strlen	getopt.c	/^my_strlen (str)$/;"	f	file:
+my_strlen	getopt.c	167;"	d	file:
+name	getopt.h	/^  const char *name;$/;"	m	struct:option
+nextchar	getopt.c	/^static char *nextchar;$/;"	v	file:
+no_argument	getopt.h	95;"	d
+oldincludedir	Makefile	/^oldincludedir = \/usr\/include$/;"	m
+optarg	getopt.c	/^char *optarg = 0;$/;"	v
+opterr	getopt.c	/^int opterr = 1;$/;"	v
+optind	getopt.c	/^int optind = 0;$/;"	v
+option	getopt.h	/^struct option$/;"	s
+optional_argument	getopt.h	97;"	d
+options	rinetd.c	/^RinetdOptions options = {$/;"	v
+optopt	getopt.c	/^int optopt = BAD_OPTION;$/;"	v
+ordering	getopt.c	/^} ordering;$/;"	v	typeref:enum:__anon2	file:
+pattern	rinetd.h	/^	char *pattern;$/;"	m	struct:_rule
+pdfdir	Makefile	/^pdfdir = ${docdir}$/;"	m
+pidLogFileName	rinetd.c	/^char *pidLogFileName = NULL;$/;"	v
+pkgdatadir	Makefile	/^pkgdatadir = $(datadir)\/rinetd$/;"	m
+pkgincludedir	Makefile	/^pkgincludedir = $(includedir)\/rinetd$/;"	m
+pkglibdir	Makefile	/^pkglibdir = $(libdir)\/rinetd$/;"	m
+pkglibexecdir	Makefile	/^pkglibexecdir = $(libexecdir)\/rinetd$/;"	m
+plumber	rinetd.c	/^RETSIGTYPE plumber(int s)$/;"	f
+prefix	Makefile	/^prefix = \/usr\/local$/;"	m
+program_details	.auto/missing	/^program_details ()$/;"	f
+program_transform_name	Makefile	/^program_transform_name = s,x,x,$/;"	m
+prototypes	configure	/^   function prototypes and stuff, but not '\\xHH' hex character constants.$/;"	f
+psdir	Makefile	/^psdir = ${docdir}$/;"	m
+quit	rinetd.c	/^RETSIGTYPE quit(int s)$/;"	f
+reAddresses	rinetd.h	/^	struct in_addr reAddresses;$/;"	m	struct:_connection_info	typeref:struct:_connection_info::in_addr
+readArgs	rinetd.c	/^static int readArgs (int argc, char **argv, RinetdOptions *options)$/;"	f	file:
+readConfiguration	rinetd.c	/^static void readConfiguration(void) {$/;"	f	file:
+recvBytes	rinetd.h	/^	int recvBytes, sentBytes;$/;"	m	struct:_socket
+recvPos	rinetd.h	/^	int recvPos, sentPos;$/;"	m	struct:_socket
+refuse	rinetd.c	/^static void refuse(ConnectionInfo *cnx, int logCode)$/;"	f	file:
+registerPID	rinetd.c	/^void registerPID(void)$/;"	f
+remote	rinetd.h	/^	Socket remote, local;$/;"	m	struct:_connection_info
+required_argument	getopt.h	96;"	d
+rinetd_CFLAGS	Makefile	/^rinetd_CFLAGS = -std=c99 -D_XOPEN_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wwrite-strings -I.$/;"	m
+rinetd_LDADD	Makefile	/^rinetd_LDADD = $(LDADD)$/;"	m
+rinetd_LINK	Makefile	/^rinetd_LINK = $(CCLD) $(rinetd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \\$/;"	m
+rinetd_OBJECTS	Makefile	/^rinetd_OBJECTS = $(am_rinetd_OBJECTS)$/;"	m
+rinetd_SOURCES	Makefile	/^rinetd_SOURCES = rinetd.c rinetd.h match.c match.h$/;"	m
+ruleType	rinetd.h	/^enum ruleType {$/;"	g
+rulesCount	rinetd.h	/^	int rulesStart, rulesCount;$/;"	m	struct:_server_info
+rulesStart	rinetd.h	/^	int rulesStart, rulesCount;$/;"	m	struct:_server_info
+sbin_PROGRAMS	Makefile	/^sbin_PROGRAMS = rinetd$(EXEEXT)$/;"	m
+sbindir	Makefile	/^sbindir = ${exec_prefix}\/sbin$/;"	m
+seInfo	rinetd.c	/^ServerInfo *seInfo = NULL;$/;"	v
+seTotal	rinetd.c	/^int seTotal = 0;$/;"	v
+selectPass	rinetd.c	/^static void selectPass(void) {$/;"	f	file:
+sentBytes	rinetd.h	/^	int recvBytes, sentBytes;$/;"	m	struct:_socket
+sentPos	rinetd.h	/^	int recvPos, sentPos;$/;"	m	struct:_socket
+server	rinetd.h	/^	ServerInfo const *server; \/\/ only useful for logEvent$/;"	m	struct:_connection_info
+setConnectionCount	rinetd.c	/^static void setConnectionCount(int newCount)$/;"	f	file:
+set_base_from	.auto/depcomp	/^set_base_from ()$/;"	f
+set_dir_from	.auto/depcomp	/^set_dir_from ()$/;"	f
+sharedstatedir	Makefile	/^sharedstatedir = ${prefix}\/com$/;"	m
+srcdir	Makefile	/^srcdir = .$/;"	m
+subdir	Makefile	/^subdir = .$/;"	m
+sysconf_DATA	Makefile	/^sysconf_DATA = rinetd.conf$/;"	m
+sysconfdir	Makefile	/^sysconfdir = ${prefix}\/etc$/;"	m
+syslog	rinetd.c	13;"	d	file:
+tardir	Makefile	/^	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2$/;"	m
+tardir	Makefile	/^	tardir=$(distdir) && $(am__tar) | XZ_OPT=$${XZ_OPT--e} xz -c >$(distdir).tar.xz$/;"	m
+tardir	Makefile	/^	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z$/;"	m
+tardir	Makefile	/^	tardir=$(distdir) && $(am__tar) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).tar.gz$/;"	m
+tardir	Makefile	/^	tardir=$(distdir) && $(am__tar) | lzip -c $${LZIP_OPT--9} >$(distdir).tar.lz$/;"	m
+target_alias	Makefile	/^target_alias = $/;"	m
+test_net_init	rinetd.c	/^static int test_net_init(int argc, char **argv)$/;"	f	file:
+toHost	rinetd.h	/^	char *fromHost, *toHost;$/;"	m	struct:_server_info
+toPort	rinetd.h	/^	int fromPort, toPort;$/;"	m	struct:_server_info
+top_build_prefix	Makefile	/^top_build_prefix = $/;"	m
+top_builddir	Makefile	/^top_builddir = .$/;"	m
+top_distdir	Makefile	/^top_distdir = $(distdir)$/;"	m
+top_srcdir	Makefile	/^top_srcdir = .$/;"	m
+transform	Makefile	/^transform = $(program_transform_name)$/;"	m
+type	rinetd.h	/^	int type;$/;"	m	struct:_rule
+val	getopt.h	/^  int val;$/;"	m	struct:option

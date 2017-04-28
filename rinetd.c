@@ -2,6 +2,9 @@
 #	include <config.h>
 #endif
 
+#include "lkl.h"
+#include "lkl_host.h"
+
 #ifndef RETSIGTYPE
 #	define RETSIGTYPE void
 #endif
@@ -56,7 +59,11 @@
 static inline int closesocket(int s) {
 	return close(s);
 }
+static inline int closeServersocket(int s) {
+	return lkl_sys_close(s);
+}
 #	define ioctlsocket ioctl
+#   define ioctlServersocket lkl_sys_ioctl
 #	define WSAEWOULDBLOCK EWOULDBLOCK
 #	define WSAEAGAIN EAGAIN
 #	define WSAEINPROGRESS EINPROGRESS
@@ -81,7 +88,28 @@ static inline int GetLastError(void) {
 
 #include "match.h"
 #include "rinetd.h"
+#include <stdarg.h>
+//#include <pthread.h>
+// #	define syslog fprintf
+// #	define LOG_ERR stderr
+// #	define LOG_INFO stdout
+static int lkl_call(int nr, int args, ...)
+{
+	long params[6];
+	va_list vl;
+	int i;
 
+	va_start(vl, args);
+	for (i = 0; i < args; i++)
+		params[i] = va_arg(vl, long);
+	va_end(vl);
+
+	return lkl_syscall(nr, params);
+}
+
+
+
+//int fdctl[2];
 Rule *allRules = NULL;
 int allRulesCount = 0;
 int globalRulesCount = 0;
@@ -131,6 +159,9 @@ RinetdOptions options = {
 };
 
 static void selectPass(void);
+static void handleServerWrite(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
+static void handleServerRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
+static void handleServerClose(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
 static void handleWrite(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
 static void handleRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
 static void handleClose(ConnectionInfo *cnx, Socket *socket, Socket *other_socket);
@@ -148,6 +179,7 @@ static void readConfiguration(void);
 static void registerPID(void);
 static void logEvent(ConnectionInfo const *cnx, ServerInfo const *srv, int result);
 static struct tm *get_gmtoff(int *tz);
+static int test_net_init(int argc, char **argv);
 
 /* Signal handlers */
 #if !HAVE_SIGACTION && !_WIN32
@@ -176,7 +208,10 @@ int main(int argc, char *argv[])
 	openlog("rinetd", LOG_PID, LOG_DAEMON);
 #endif
 
-	readArgs(argc, argv, &options);
+	readArgs(argc - 5, argv, &options);
+
+	if (test_net_init(6, argv + argc-1-5) < 0)
+		return -1;
 
 #if HAVE_DAEMON && !DEBUG
 	if (!options.foreground && daemon(0, 0) != 0) {
@@ -224,7 +259,7 @@ static void clearConfiguration(void) {
 	for (int i = 0; i < seTotal; ++i) {
 		ServerInfo *srv = &seInfo[i];
 		if (srv->fd != INVALID_SOCKET) {
-			closesocket(srv->fd);
+			closeServersocket(srv->fd);
 		}
 		free(srv->fromHost);
 		free(srv->toHost);
@@ -377,7 +412,7 @@ static void readConfiguration(void) {
 				continue;
 			}
 			/* Make a server socket */
-			SOCKET fd = socket(PF_INET, SOCK_STREAM, 0);
+			SOCKET fd = lkl_sys_socket(PF_INET, SOCK_STREAM, 0);
 			if (fd == INVALID_SOCKET) {
 				syslog(LOG_ERR, "couldn't create "
 					"server socket! (%m)\n");
@@ -388,24 +423,24 @@ static void readConfiguration(void) {
 			memcpy(&saddr.sin_addr, &iaddr, sizeof(iaddr));
 			saddr.sin_port = htons(bindPort);
 			int tmp = 1;
-			setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
-				(const char *) &tmp, sizeof(tmp));
-			if (bind(fd, (struct sockaddr *)
+			lkl_sys_setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+				(char *) &tmp, sizeof(tmp));
+			if (lkl_sys_bind(fd, (struct lkl_sockaddr *)
 				&saddr, sizeof(saddr)) == SOCKET_ERROR)
 			{
 				/* Warn -- don't exit. */
 				syslog(LOG_ERR, "couldn't bind to "
 					"address %s port %d (%m)\n",
 					bindAddress, bindPort);
-				closesocket(fd);
+				closeServersocket(fd);
 				continue;
 			}
-			if (listen(fd, RINETD_LISTEN_BACKLOG) == SOCKET_ERROR) {
+			if (lkl_sys_listen(fd, RINETD_LISTEN_BACKLOG) == SOCKET_ERROR) {
 				/* Warn -- don't exit. */
 				syslog(LOG_ERR, "couldn't listen to "
 					"address %s port %d (%m)\n",
 					bindAddress, bindPort);
-				closesocket(fd);
+				closeServersocket(fd);
 				continue;
 			}
 #if _WIN32
@@ -413,13 +448,13 @@ static void readConfiguration(void) {
 #else
 			int ioctltmp;
 #endif
-			ioctlsocket(fd, FIONBIO, &ioctltmp);
+			ioctlServersocket(fd, FIONBIO, (long)&ioctltmp);
 			if (getAddress(connectAddress, &iaddr) < 0) {
 				/* Warn -- don't exit. */
 				syslog(LOG_ERR, "host %s could not be "
 					"resolved on file %s, line %d.\n",
 					bindAddress, options.conf_file, lnum);
-				closesocket(fd);
+				closeServersocket(fd);
 				continue;
 			}
 			/* Allocate server info */
@@ -506,7 +541,7 @@ static void setConnectionCount(int newCount)
 			closesocket(coInfo[i].local.fd);
 		}
 		if (coInfo[i].remote.fd != INVALID_SOCKET) {
-			closesocket(coInfo[i].remote.fd);
+			closeServersocket(coInfo[i].remote.fd);
 		}
 		free(coInfo[i].local.buffer);
 	}
@@ -576,13 +611,20 @@ static void selectPass(void) {
 #	define FD_SET_EXT(fd, ar) FD_SET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
 #	define FD_ISSET_EXT(fd, ar) FD_ISSET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
 
+    //printf("fdSetCount=%d\n", fdSetCount);
+    //printf("FD_SETSIZE=%d\n", FD_SETSIZE);
 	fd_set readfds[fdSetCount], writefds[fdSetCount];
+    fd_set readServerfds[fdSetCount], writeServerfds[fdSetCount];
 	FD_ZERO_EXT(readfds);
 	FD_ZERO_EXT(writefds);
+	FD_ZERO_EXT(readServerfds);
+	FD_ZERO_EXT(writeServerfds);
+
+    //printf("seTotal= %d\ncoTotal=%d\n", seTotal, coTotal);
 	/* Server sockets */
 	for (int i = 0; i < seTotal; ++i) {
 		if (seInfo[i].fd != INVALID_SOCKET) {
-			FD_SET_EXT(seInfo[i].fd, readfds);
+			FD_SET_EXT(seInfo[i].fd, readServerfds);
 		}
 	}
 	/* Connection sockets */
@@ -603,25 +645,50 @@ static void selectPass(void) {
 		if (cnx->remote.fd != INVALID_SOCKET) {
 			/* Get more input if we have room for it */
 			if (cnx->remote.recvPos < RINETD_BUFFER_SIZE) {
-				FD_SET_EXT(cnx->remote.fd, readfds);
+				FD_SET_EXT(cnx->remote.fd, readServerfds);
 			}
 			/* Send more output if we have any, or if we’re closing */
 			if (cnx->remote.sentPos < cnx->local.recvPos || cnx->coClosing) {
-				FD_SET_EXT(cnx->remote.fd, writefds);
+				FD_SET_EXT(cnx->remote.fd, writeServerfds);
 			}
 		}
 	}
-	select(maxfd + 1, readfds, writefds, 0, 0);
+
+    //fd_set rdset;
+    //int maxfd = 2;
+    //pipe(fdctl);
+    ////maxfd = fdctl[1];
+    //FD_ZERO( &rdset);
+    //FD_SET( fdctl[0], &rdset);
+    //FD_SET( fdctl[1], &rdset);
+
+    //pthread_t ctid, stid;
+    //pthread_create( &ctid, NULL, clientSelect, NULL);
+    //pthread_create( &stid, NULL, serverSelect, NULL);
+
+    //select( maxfd+1, &rdset, 0, 0, 0 );
+    //printf("maxfd=%d\n", maxfd);
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000;
+	select(maxfd + 1, readfds, writefds, 0, &timeout);
+	//lkl_sys_select(maxfd + 1, readServerfds, writeServerfds, 0, 0);
+    //printf("lkl_sys_select running\n");
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 10000;
+    lkl_call(__lkl__NR_select, 5, maxfd + 1, readServerfds, writeServerfds, 0, &timeout);
+
+    //printf("lkl_sys_select run\n");
 	for (int i = 0; i < coTotal; ++i) {
 		ConnectionInfo *cnx = &coInfo[i];
 		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, readfds)) {
-				handleRead(cnx, &cnx->remote, &cnx->local);
+			if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
+				handleServerRead(cnx, &cnx->remote, &cnx->local);
 			}
 		}
 		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, writefds)) {
-				handleWrite(cnx, &cnx->remote, &cnx->local);
+			if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
+				handleServerWrite(cnx, &cnx->remote, &cnx->local);
 			}
 		}
 		if (cnx->local.fd != INVALID_SOCKET) {
@@ -639,13 +706,90 @@ static void selectPass(void) {
 	for (int i = 0; i < seTotal; ++i) {
 		ServerInfo *srv = &seInfo[i];
 		if (srv->fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(srv->fd, readfds)) {
+			if (FD_ISSET_EXT(srv->fd, readServerfds)) {
 				handleAccept(srv);
+                //printf("handleAccept running\n");
 			}
 		}
 	}
 }
 
+static void handleServerRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
+{
+	if (RINETD_BUFFER_SIZE == socket->recvPos) {
+		return;
+	}
+	int got = lkl_sys_recv(socket->fd, socket->buffer + socket->recvPos,
+		RINETD_BUFFER_SIZE - socket->recvPos, 0);
+	if (got < 0) {
+		if (GetLastError() == WSAEWOULDBLOCK) {
+			return;
+		}
+		if (GetLastError() == WSAEINPROGRESS) {
+			return;
+		}
+	}
+	if (got <= 0) {
+		/* Prepare for closing */
+		handleServerClose(cnx, socket, other_socket);
+		return;
+	}
+	socket->recvBytes += got;
+	socket->recvPos += got;
+}
+
+static void handleServerWrite(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
+{
+	if (cnx->coClosing && (socket->sentPos == other_socket->recvPos)) {
+		PERROR("rinetd: local closed and no more output");
+		logEvent(cnx, cnx->server, cnx->coLog);
+		closeServersocket(socket->fd);
+		socket->fd = INVALID_SOCKET;
+		return;
+	}
+	int got = lkl_sys_send(socket->fd, other_socket->buffer + socket->sentPos,
+		other_socket->recvPos - socket->sentPos, 0);
+	if (got < 0) {
+		if (GetLastError() == WSAEWOULDBLOCK) {
+			return;
+		}
+		if (GetLastError() == WSAEINPROGRESS) {
+			return;
+		}
+		handleServerClose(cnx, socket, other_socket);
+		return;
+	}
+	socket->sentPos += got;
+	socket->sentBytes += got;
+	if (socket->sentPos == other_socket->recvPos) {
+		socket->sentPos = other_socket->recvPos = 0;
+	}
+}
+
+
+static void handleServerClose(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
+{
+	cnx->coClosing = 1;
+	/* One end fizzled out, so make sure we're all done with that */
+	closeServersocket(socket->fd);
+	socket->fd = INVALID_SOCKET;
+	if (other_socket->fd != INVALID_SOCKET) {
+#ifndef __linux__
+#ifndef _WIN32
+		/* Now set up the other end for a polite closing */
+
+		/* Request a low-water mark equal to the entire
+			output buffer, so the next write notification
+			tells us for sure that we can close the socket. */
+		int arg = 1024;
+		lkl_sys_setsockopt(other_socket->fd, SOL_SOCKET, SO_SNDLOWAT,
+			&arg, sizeof(arg));
+#endif /* _WIN32 */
+#endif /* __linux__ */
+		cnx->coLog = socket == &cnx->local ?
+			logLocalClosedFirst : logRemoteClosedFirst;
+	}
+}
 static void handleRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
 {
 	if (RINETD_BUFFER_SIZE == socket->recvPos) {
@@ -729,7 +873,7 @@ static void handleAccept(ServerInfo const *srv)
 		return;
 	}
 
-	struct sockaddr addr;
+	struct lkl_sockaddr addr;
 	struct in_addr address;
 #if HAVE_SOCKLEN_T
 	socklen_t addrlen;
@@ -737,7 +881,7 @@ static void handleAccept(ServerInfo const *srv)
 	int addrlen;
 #endif
 	addrlen = sizeof(addr);
-	SOCKET nfd = accept(srv->fd, &addr, &addrlen);
+	SOCKET nfd = lkl_sys_accept(srv->fd, &addr, &addrlen);
 	if (nfd == INVALID_SOCKET) {
 		syslog(LOG_ERR, "accept(%d): %m", srv->fd);
 		logEvent(NULL, srv, logAcceptFailed);
@@ -749,11 +893,11 @@ static void handleAccept(ServerInfo const *srv)
 #else
 	int ioctltmp;
 #endif
-	ioctlsocket(nfd, FIONBIO, &ioctltmp);
+	ioctlServersocket(nfd, FIONBIO, (long)&ioctltmp);
 
 #ifndef _WIN32
-	int tmp = 0;
-	setsockopt(nfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
+	char tmp = 0;
+	lkl_sys_setsockopt(nfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
 #endif
 
 	cnx->local.fd = INVALID_SOCKET;
@@ -768,6 +912,7 @@ static void handleAccept(ServerInfo const *srv)
 
 	struct sockaddr_in *sin = (struct sockaddr_in *) &addr;
 	cnx->reAddresses.s_addr = address.s_addr = sin->sin_addr.s_addr;
+    //printf("%d\n", cnx->reAddresses.s_addr);
 	char const *addressText = inet_ntoa(address);
 
 	/* 1. Check global allow rules. If there are no
@@ -829,7 +974,7 @@ static void handleAccept(ServerInfo const *srv)
 	cnx->local.fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (cnx->local.fd == INVALID_SOCKET) {
 		syslog(LOG_ERR, "socket(): %m");
-		closesocket(cnx->remote.fd);
+		closeServersocket(cnx->remote.fd);
 		cnx->remote.fd = INVALID_SOCKET;
 		logEvent(cnx, srv, logLocalSocketFailed);
 		return;
@@ -876,7 +1021,7 @@ static void handleAccept(ServerInfo const *srv)
 		{
 			PERROR("rinetd: connect");
 			closesocket(cnx->local.fd);
-			closesocket(cnx->remote.fd);
+			closeServersocket(cnx->remote.fd);
 			cnx->remote.fd = INVALID_SOCKET;
 			cnx->local.fd = INVALID_SOCKET;
 			logEvent(cnx, srv, logLocalConnectFailed);
@@ -900,7 +1045,7 @@ static void refuse(ConnectionInfo *cnx, int logCode)
 {
 	/* Local fd is not open yet when we refuse(), so only
 		close the remote socket. */
-	closesocket(cnx->remote.fd);
+	closeServersocket(cnx->remote.fd);
 	cnx->remote.fd = INVALID_SOCKET;
 	logEvent(cnx, cnx->server, logCode);
 }
@@ -1142,9 +1287,10 @@ static int readArgs (int argc, char **argv, RinetdOptions *options)
 				printf("Most options are controlled through the\n"
 					"configuration file. See the rinetd(8)\n"
 					"manpage for more information.\n");
+		        printf("usage <iftype: tap|dpdk|raw> <ifname> <v4addr> <v4mask> <gateway>\n");
 				exit (0);
 			case 'v':
-				printf ("rinetd %s\n", PACKAGE_VERSION);
+				//printf ("rinetd %s\n", PACKAGE_VERSION);
 				exit (0);
 			case '?':
 			default:
@@ -1173,3 +1319,118 @@ static struct tm *get_gmtoff(int *tz) {
 	return t;
 }
 
+static int test_net_init(int argc, char **argv)
+{
+	char *iftype, *ifname, *ip, *netmask_len;
+	char *gateway = NULL;
+	char *debug = getenv("LKL_DEBUG");
+	int ret, nd_id = -1, nd_ifindex = -1;
+	struct lkl_netdev *nd = NULL;
+	char boot_cmdline[256] = "\0";
+	struct lkl_netdev_args nd_args;
+
+	if (argc < 4) {
+		printf("usage %s <iftype: tap|dpdk|raw> <ifname> <v4addr> <v4mask> <gateway>\n", argv[0]);
+		exit(0);
+	}
+
+    printf("%s\n", argv[1]);
+	iftype = argv[1];
+	ifname = argv[2];
+	ip = argv[3];
+	netmask_len = argv[4];
+	gateway = argv[5];
+
+
+	int offload = strtol("0x8883", NULL, 0);
+
+	if (iftype && ifname && (strncmp(iftype, "tap", 3) == 0))
+		nd = lkl_netdev_tap_create(ifname, offload); //backup: 0
+#ifdef CONFIG_AUTO_LKL_VIRTIO_NET_DPDK
+	else if (iftype && ifname && (strncmp(iftype, "dpdk", 4) == 0))
+		nd = lkl_netdev_dpdk_create(ifname);
+#endif /* CONFIG_AUTO_LKL_VIRTIO_NET_DPDK */
+	else if (iftype && ifname && (strncmp(iftype, "raw", 3) == 0))
+		nd = lkl_netdev_raw_create(ifname);
+	else if (iftype && ifname && (strncmp(iftype, "macvtap", 7) == 0))
+		nd = lkl_netdev_macvtap_create(ifname, 0);
+
+	if (!nd) {
+		fprintf(stderr, "init netdev failed\n");
+		return -1;
+	}
+
+	nd_args.mac = NULL;
+    nd_args.offload = offload;
+	ret = lkl_netdev_add(nd, &nd_args); //backup NULL
+	//ret = lkl_netdev_add(nd, NULL); //backup NULL
+	if (ret < 0) {
+		fprintf(stderr, "failed to add netdev: %s\n",
+			lkl_strerror(ret));
+	}
+	nd_id = ret;
+
+	if (!debug)
+		lkl_host_ops.print = NULL;
+
+
+	if ((ip && !strcmp(ip, "dhcp")) && (nd_id != -1))
+		snprintf(boot_cmdline, sizeof(boot_cmdline), "ip=dhcp");
+	ret = lkl_start_kernel(&lkl_host_ops, boot_cmdline);
+	if (ret) {
+		fprintf(stderr, "can't start kernel: %s\n", lkl_strerror(ret));
+		return -1;
+	}
+
+	ret = lkl_set_fd_limit(65535);
+	if (ret)
+		fprintf(stderr, "lkl_set_fd_limit failed: %s\n",
+			lkl_strerror(ret));
+
+	/* fillup FDs up to LKL_FD_OFFSET */ //TODO
+
+	/* lo iff_up */
+	lkl_if_up(1);
+
+	if (nd_id >= 0) {
+		nd_ifindex = lkl_netdev_get_ifindex(nd_id);
+		if (nd_ifindex > 0)
+			lkl_if_up(nd_ifindex);
+		else
+			fprintf(stderr, "failed to get ifindex for netdev id %d: %s\n",
+				nd_id, lkl_strerror(nd_ifindex));
+	}
+
+	if (nd_ifindex >= 0 && ip && netmask_len) {
+		unsigned int addr = inet_addr(ip);
+		int nmlen = atoi(netmask_len);
+
+		if (addr != INADDR_NONE && nmlen > 0 && nmlen < 32) {
+			ret = lkl_if_set_ipv4(nd_ifindex, addr, nmlen);
+			if (ret < 0)
+				fprintf(stderr, "failed to set IPv4 address: %s\n",
+					lkl_strerror(ret));
+		}
+	}
+
+	if (nd_ifindex >= 0 && gateway) {
+		unsigned int addr = inet_addr(gateway);
+
+		if (addr != INADDR_NONE) {
+			ret = lkl_set_ipv4_gateway(addr);
+			if (ret < 0)
+				fprintf(stderr, "failed to set IPv4 gateway: %s\n",
+					lkl_strerror(ret));
+		}
+	}
+
+    char qdisc_entries[] = "root|fq";
+    char sysctls[] = "net.ipv4.tcp_congestion_control=bbr";
+
+	if (nd_ifindex >= 0)
+		lkl_qdisc_parse_add(nd_ifindex, qdisc_entries);
+
+	lkl_sysctl_parse_write(sysctls);
+
+	return 0;
+}
