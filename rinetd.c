@@ -4,6 +4,7 @@
 
 #include "lkl.h"
 #include "lkl_host.h"
+#include<pthread.h>
 
 #ifndef RETSIGTYPE
 #	define RETSIGTYPE void
@@ -107,9 +108,45 @@ static int lkl_call(int nr, int args, ...)
 	return lkl_syscall(nr, params);
 }
 
+int parse_mac_str(char *mac_str, __lkl__u8 mac[LKL_ETH_ALEN])
+{
+	char delim[] = ":";
+	char *saveptr = NULL, *token = NULL;
+	int i = 0;
+	if (!mac_str) {
+		return 0;
+	}
+
+	for (token = strtok_r(mac_str, delim, &saveptr); i < LKL_ETH_ALEN; i++) {
+		if (!token) {
+			/* The address is too short */
+			return -1;
+		} else {
+			mac[i] = (__lkl__u8) strtol(token, NULL, 16);
+		}
+
+		token = strtok_r(NULL, delim, &saveptr);
+	}
+
+	if (strtok_r(NULL, delim, &saveptr)) {
+		/* The address is too long */
+		return -1;
+	}
+
+	return 1;
+}
+
+static inline void set_sockaddr(struct lkl_sockaddr_in *sin, unsigned int addr,
+				unsigned short port)
+{
+	sin->sin_family = LKL_AF_INET;
+	sin->sin_addr.lkl_s_addr = addr;
+	sin->sin_port = port;
+}
 
 
-//int fdctl[2];
+
+int fdctl_client[2], fdctl_server[2];
 Rule *allRules = NULL;
 int allRulesCount = 0;
 int globalRulesCount = 0;
@@ -190,6 +227,102 @@ static RETSIGTYPE hup(int s);
 #endif
 static RETSIGTYPE quit(int s);
 
+
+struct pthread_arg {
+    int maxfd;
+	fd_set *readfds;
+    fd_set *writefds;
+};
+
+#	define FD_ISSET_EXT(fd, ar) FD_ISSET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
+void *clientSelect(void *arg){
+
+    printf("flag3\n");
+    // block mode
+    struct pthread_arg *clientArg = arg;
+    int maxfdClient = clientArg->maxfd;
+    fd_set *readfds = clientArg->readfds;
+    fd_set *writefds = clientArg->writefds;
+    if(fdctl_client[1] > maxfdClient){
+        maxfdClient = fdctl_client[1];
+    }
+    FD_SET(fdctl_client[1], readfds);
+	select(maxfdClient + 1, readfds, writefds, 0, 0);
+    printf("flag4\n");
+    if(FD_ISSET(fdctl_client[1], readfds)){
+        close(fdctl_client[1]);
+        return clientArg;
+    }
+	for (int i = 0; i < coTotal; ++i) {
+		ConnectionInfo *cnx = &coInfo[i];
+		if (cnx->local.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
+				handleRead(cnx, &cnx->local, &cnx->remote);
+			}
+		}
+		if (cnx->local.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
+				handleWrite(cnx, &cnx->local, &cnx->remote);
+			}
+		}
+	}
+    lkl_sys_close(fdctl_server[0]);
+    close(fdctl_client[0]);
+    close(fdctl_client[1]);
+    return clientArg;
+}
+
+void *serverSelect(void *arg){
+
+    // block mode
+    struct pthread_arg *serverArg = arg;
+    int maxfdServer = serverArg->maxfd;
+    printf("flag8\n");
+    fd_set *readServerfds = serverArg->readfds;
+    fd_set *writeServerfds = serverArg->writefds;
+    printf("flag9\n");
+    printf("fdctl_server[1]=%d\n", fdctl_server[1]);
+    if(fdctl_server[1] > maxfdServer){
+        maxfdServer = fdctl_server[1];
+    }
+    printf("flag5\n");
+    FD_SET(fdctl_server[1], readServerfds);
+    printf("flag7\n");
+    lkl_call(__lkl__NR_select, 5, maxfdServer + 1, readServerfds, writeServerfds, 0, 0);
+    if(FD_ISSET(fdctl_server[1], readServerfds)){
+        lkl_sys_close(fdctl_server[1]);
+        return serverArg;
+    }
+    printf("flag10\n");
+	for (int i = 0; i < coTotal; ++i) {
+		ConnectionInfo *cnx = &coInfo[i];
+		if (cnx->remote.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
+				handleServerRead(cnx, &cnx->remote, &cnx->local);
+			}
+		}
+		if (cnx->remote.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
+				handleServerWrite(cnx, &cnx->remote, &cnx->local);
+			}
+		}
+	}
+	/* Handle servers last because handleAccept() may modify coTotal */
+	for (int i = 0; i < seTotal; ++i) {
+		ServerInfo *srv = &seInfo[i];
+		if (srv->fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(srv->fd, readServerfds)) {
+				handleAccept(srv);
+                //printf("handleAccept running\n");
+			}
+		}
+	}
+    printf("flag6\n");
+    close(fdctl_client[0]);
+    lkl_sys_close(fdctl_server[0]);
+    lkl_sys_close(fdctl_server[1]);
+    return serverArg;
+}
 
 int main(int argc, char *argv[])
 {
@@ -655,63 +788,91 @@ static void selectPass(void) {
 	}
 
     //fd_set rdset;
-    //int maxfd = 2;
-    //pipe(fdctl);
-    ////maxfd = fdctl[1];
-    //FD_ZERO( &rdset);
-    //FD_SET( fdctl[0], &rdset);
-    //FD_SET( fdctl[1], &rdset);
+    //int maxfdP = 2;
 
-    //pthread_t ctid, stid;
-    //pthread_create( &ctid, NULL, clientSelect, NULL);
-    //pthread_create( &stid, NULL, serverSelect, NULL);
+    close(fdctl_client[0]);
+    close(fdctl_client[1]);
+    lkl_sys_close(fdctl_server[0]);
+    lkl_sys_close(fdctl_server[1]);
+    pipe(fdctl_client);
+    int ret = lkl_sys_pipe2(fdctl_server, 0); //LKL_O_NONBLOCK
+	if (ret) {
+		printf("pipe2: %s", lkl_strerror(ret));
+	}
+    //printf("aa: fdctl_server[1]=%d\n", fdctl_server[1]);
+    //if(fdctl_client[1] > fdctl_server[1]){
+    //    maxfdP = fdctl_client[1];
+    //} else {
+    //    maxfdP = fdctl_server[1];
+    //}
+    //FD_ZERO( &rdset);
+    //FD_SET( fdctl_client[1], &rdset);
+    //FD_SET( fdctl_server[1], &rdset);
+
+    pthread_t ctid, stid;
+    struct pthread_arg clientArg = {maxfd, readfds, writefds};
+    struct pthread_arg serverArg = {maxfd, readServerfds, writeServerfds};
+    pthread_create( &ctid, NULL, clientSelect, &clientArg);
+    pthread_create( &stid, NULL, serverSelect, &serverArg);
+    pthread_join(ctid, NULL);
+    pthread_join(stid, NULL);
+
+    //select(maxfdP + 1, &rdset, 0, 0, 0);
+    //printf("ok\n");
+
+    //if(FD_ISSET(fdctl_client[1], &rdset)){
+    //    pthread_cancel(stid);
+    //} else {
+    //    pthread_cancel(ctid);
+    //}
 
     //select( maxfd+1, &rdset, 0, 0, 0 );
     //printf("maxfd=%d\n", maxfd);
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 10000;
-	select(maxfd + 1, readfds, writefds, 0, &timeout);
-	//lkl_sys_select(maxfd + 1, readServerfds, writeServerfds, 0, 0);
-    //printf("lkl_sys_select running\n");
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 10000;
-    lkl_call(__lkl__NR_select, 5, maxfd + 1, readServerfds, writeServerfds, 0, &timeout);
+
+    //struct timeval timeout;
+    //timeout.tv_sec = 0;
+    //timeout.tv_usec = 10000;
+	//select(maxfd + 1, readfds, writefds, 0, &timeout);
+	////lkl_sys_select(maxfd + 1, readServerfds, writeServerfds, 0, 0);
+    ////printf("lkl_sys_select running\n");
+    //timeout.tv_sec = 0;
+    //timeout.tv_usec = 10000;
+    //lkl_call(__lkl__NR_select, 5, maxfd + 1, readServerfds, writeServerfds, 0, &timeout);
 
     //printf("lkl_sys_select run\n");
-	for (int i = 0; i < coTotal; ++i) {
-		ConnectionInfo *cnx = &coInfo[i];
-		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
-				handleServerRead(cnx, &cnx->remote, &cnx->local);
-			}
-		}
-		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
-				handleServerWrite(cnx, &cnx->remote, &cnx->local);
-			}
-		}
-		if (cnx->local.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
-				handleRead(cnx, &cnx->local, &cnx->remote);
-			}
-		}
-		if (cnx->local.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
-				handleWrite(cnx, &cnx->local, &cnx->remote);
-			}
-		}
-	}
+	//for (int i = 0; i < coTotal; ++i) {
+	//	ConnectionInfo *cnx = &coInfo[i];
+	//	if (cnx->remote.fd != INVALID_SOCKET) {
+	//		if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
+	//			handleServerRead(cnx, &cnx->remote, &cnx->local);
+	//		}
+	//	}
+	//	if (cnx->remote.fd != INVALID_SOCKET) {
+	//		if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
+	//			handleServerWrite(cnx, &cnx->remote, &cnx->local);
+	//		}
+	//	}
+	//	if (cnx->local.fd != INVALID_SOCKET) {
+	//		if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
+	//			handleRead(cnx, &cnx->local, &cnx->remote);
+	//		}
+	//	}
+	//	if (cnx->local.fd != INVALID_SOCKET) {
+	//		if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
+	//			handleWrite(cnx, &cnx->local, &cnx->remote);
+	//		}
+	//	}
+	//}
 	/* Handle servers last because handleAccept() may modify coTotal */
-	for (int i = 0; i < seTotal; ++i) {
-		ServerInfo *srv = &seInfo[i];
-		if (srv->fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(srv->fd, readServerfds)) {
-				handleAccept(srv);
-                //printf("handleAccept running\n");
-			}
-		}
-	}
+	//for (int i = 0; i < seTotal; ++i) {
+	//	ServerInfo *srv = &seInfo[i];
+	//	if (srv->fd != INVALID_SOCKET) {
+	//		if (FD_ISSET_EXT(srv->fd, readServerfds)) {
+	//			handleAccept(srv);
+    //            //printf("handleAccept running\n");
+	//		}
+	//	}
+	//}
 }
 
 static void handleServerRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
@@ -875,11 +1036,11 @@ static void handleAccept(ServerInfo const *srv)
 
 	struct lkl_sockaddr addr;
 	struct in_addr address;
-#if HAVE_SOCKLEN_T
-	socklen_t addrlen;
-#else
+//#if HAVE_SOCKLEN_T
+//	socklen_t addrlen;
+//#else
 	int addrlen;
-#endif
+//#endif
 	addrlen = sizeof(addr);
 	SOCKET nfd = lkl_sys_accept(srv->fd, &addr, &addrlen);
 	if (nfd == INVALID_SOCKET) {
@@ -1339,10 +1500,11 @@ static int test_net_init(int argc, char **argv)
 	ifname = argv[2];
 	ip = argv[3];
 	netmask_len = argv[4];
-	gateway = argv[5];
+	//gateway = argv[5];
 
 
-	int offload = strtol("0x8883", NULL, 0);
+	//int offload = strtol("0x8883", NULL, 0);
+    int offload = 0;
 
 	if (iftype && ifname && (strncmp(iftype, "tap", 3) == 0))
 		nd = lkl_netdev_tap_create(ifname, offload); //backup: 0
@@ -1360,7 +1522,20 @@ static int test_net_init(int argc, char **argv)
 		return -1;
 	}
 
-	nd_args.mac = NULL;
+	//nd_args.mac = NULL;  //"08:00:27:1a:b1:01"
+    char mac_str[] = "08:00:27:1a:b1:01";
+	__lkl__u8 mac[LKL_ETH_ALEN];
+
+		ret = parse_mac_str(mac_str, mac);
+
+		if (ret < 0) {
+			fprintf(stderr, "failed to parse mac\n");
+			return 0;
+		} else if (ret > 0) {
+			nd_args.mac = mac;
+		} else {
+			nd_args.mac = NULL;
+		}
     nd_args.offload = offload;
 	ret = lkl_netdev_add(nd, &nd_args); //backup NULL
 	//ret = lkl_netdev_add(nd, NULL); //backup NULL
@@ -1370,8 +1545,8 @@ static int test_net_init(int argc, char **argv)
 	}
 	nd_id = ret;
 
-	if (!debug)
-		lkl_host_ops.print = NULL;
+	//if (!debug)
+	//	lkl_host_ops.print = NULL;
 
 
 	if ((ip && !strcmp(ip, "dhcp")) && (nd_id != -1))
@@ -1389,7 +1564,7 @@ static int test_net_init(int argc, char **argv)
 
 	/* fillup FDs up to LKL_FD_OFFSET */ //TODO
 
-	/* lo iff_up */
+	/* lo if_up */
 	lkl_if_up(1);
 
 	if (nd_id >= 0) {
@@ -1405,7 +1580,7 @@ static int test_net_init(int argc, char **argv)
 		unsigned int addr = inet_addr(ip);
 		int nmlen = atoi(netmask_len);
 
-		if (addr != INADDR_NONE && nmlen > 0 && nmlen < 32) {
+		if (addr != INADDR_NONE && nmlen > 0 && nmlen <= 32) {
 			ret = lkl_if_set_ipv4(nd_ifindex, addr, nmlen);
 			if (ret < 0)
 				fprintf(stderr, "failed to set IPv4 address: %s\n",
@@ -1413,16 +1588,65 @@ static int test_net_init(int argc, char **argv)
 		}
 	}
 
-	if (nd_ifindex >= 0 && gateway) {
-		unsigned int addr = inet_addr(gateway);
+	//if (nd_ifindex >= 0 && gateway) {
+	//	unsigned int addr = inet_addr(gateway);
 
-		if (addr != INADDR_NONE) {
-			ret = lkl_set_ipv4_gateway(addr);
-			if (ret < 0)
-				fprintf(stderr, "failed to set IPv4 gateway: %s\n",
-					lkl_strerror(ret));
-		}
-	}
+	//	if (addr != INADDR_NONE) {
+	//		ret = lkl_set_ipv4_gateway(addr);
+	//		if (ret < 0)
+	//			fprintf(stderr, "failed to set IPv4 gateway: %s\n",
+	//				lkl_strerror(ret));
+	//	}
+	//}
+
+
+	struct lkl_ifreq ifr;
+	int sock, err;
+
+    // add NOARP mode to eth0
+	sock = lkl_sys_socket(LKL_AF_INET, LKL_SOCK_DGRAM, 0);
+	if (sock < 0)
+		return 0;
+
+	//snprintf(ifr.lkl_ifr_name, sizeof(ifr.lkl_ifr_name), "eth%d", id);
+	memset(&ifr, 0, sizeof(ifr));
+
+	ifr.lkl_ifr_ifindex = nd_ifindex;
+	lkl_sys_ioctl(sock, LKL_SIOCGIFNAME, (long)&ifr);
+	err = lkl_sys_ioctl(sock, LKL_SIOCGIFFLAGS, (long)&ifr);
+	if (!err) {
+		ifr.lkl_ifr_flags |= LKL_IFF_UP;
+		ifr.lkl_ifr_flags |= LKL_IFF_POINTOPOINT;
+		ifr.lkl_ifr_flags |= LKL_IFF_BROADCAST;
+		//ifr.lkl_ifr_flags &= ~LKL_IFF_BROADCAST;
+		ifr.lkl_ifr_flags |= LKL_IFF_NOARP;
+		ifr.lkl_ifr_flags &= ~LKL_IFF_MULTICAST;
+        //ifr.lkl_ifr_flags = LKL_IFF_UP | LKL_IFF_POINTOPOINT | LKL_IFF_BROADCAST | LKL_IFF_NOARP & (~LKL_IFF_MULTICAST);
+		err = lkl_sys_ioctl(sock, LKL_SIOCSIFFLAGS, (long)&ifr);
+    } else {
+        perror("lkl_sys_ioctl");
+    }
+	lkl_sys_ioctl(sock, LKL_SIOCGIFFLAGS, (long)&ifr);
+
+    unsigned int addr = inet_addr(ip);
+    set_sockaddr((struct lkl_sockaddr_in *) &ifr.lkl_ifr_dstaddr, addr, 0);
+	lkl_sys_ioctl(sock, LKL_SIOCSIFDSTADDR, (long)&ifr);
+
+    set_sockaddr((struct lkl_sockaddr_in *) &ifr.lkl_ifr_broadaddr, addr, 0);
+	lkl_sys_ioctl(sock, LKL_SIOCSIFBRDADDR, (long)&ifr);
+
+	struct lkl_rtentry re;
+
+	memset(&re, 0, sizeof(re));
+	set_sockaddr((struct lkl_sockaddr_in *) &re.rt_dst, 0, 0);
+	//set_sockaddr((struct lkl_sockaddr_in *) &re.rt_genmask, 0, 0);
+	//set_sockaddr((struct lkl_sockaddr_in *) &re.rt_gateway, 0, 0);
+    re.rt_dev = "eth0";
+	re.rt_flags = LKL_RTF_UP;
+	//re.rt_flags = LKL_RTF_UP | LKL_RTF_GATEWAY;
+	err = lkl_sys_ioctl(sock, LKL_SIOCADDRT, (long)&re);
+
+	lkl_sys_close(sock);
 
     char qdisc_entries[] = "root|fq";
     char sysctls[] = "net.ipv4.tcp_congestion_control=bbr";
