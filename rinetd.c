@@ -237,7 +237,6 @@ struct pthread_arg {
 #	define FD_ISSET_EXT(fd, ar) FD_ISSET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
 void *clientSelect(void *arg){
 
-    //printf("flag3\n");
     // block mode
     struct pthread_arg *clientArg = arg;
     int maxfdClient = clientArg->maxfd;
@@ -248,28 +247,9 @@ void *clientSelect(void *arg){
     }
     FD_SET(fdctl_client[1], readfds);
 	select(maxfdClient + 1, readfds, writefds, 0, 0);
-    //printf("flag4\n");
-    if(FD_ISSET(fdctl_client[1], readfds)){
-        close(fdctl_client[1]);
-        return clientArg;
-    }
-	for (int i = 0; i < coTotal; ++i) {
-		ConnectionInfo *cnx = &coInfo[i];
-		if (cnx->local.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
-				handleRead(cnx, &cnx->local, &cnx->remote);
-			}
-		}
-		if (cnx->local.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
-				handleWrite(cnx, &cnx->local, &cnx->remote);
-			}
-		}
-	}
     lkl_sys_close(fdctl_server[0]);
-    close(fdctl_client[0]);
     close(fdctl_client[1]);
-    return clientArg;
+    //return clientArg;
 }
 
 void *serverSelect(void *arg){
@@ -277,51 +257,16 @@ void *serverSelect(void *arg){
     // block mode
     struct pthread_arg *serverArg = arg;
     int maxfdServer = serverArg->maxfd;
-    //printf("flag8\n");
     fd_set *readServerfds = serverArg->readfds;
     fd_set *writeServerfds = serverArg->writefds;
-    //printf("flag9\n");
-    //printf("fdctl_server[1]=%d\n", fdctl_server[1]);
     if(fdctl_server[1] > maxfdServer){
         maxfdServer = fdctl_server[1];
     }
-    //printf("flag5\n");
     FD_SET(fdctl_server[1], readServerfds);
-    //printf("flag7\n");
     lkl_call(__lkl__NR_select, 5, maxfdServer + 1, readServerfds, writeServerfds, 0, 0);
-    if(FD_ISSET(fdctl_server[1], readServerfds)){
-        lkl_sys_close(fdctl_server[1]);
-        return serverArg;
-    }
-    //printf("flag10\n");
-	for (int i = 0; i < coTotal; ++i) {
-		ConnectionInfo *cnx = &coInfo[i];
-		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
-				handleServerRead(cnx, &cnx->remote, &cnx->local);
-			}
-		}
-		if (cnx->remote.fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
-				handleServerWrite(cnx, &cnx->remote, &cnx->local);
-			}
-		}
-	}
-	/* Handle servers last because handleAccept() may modify coTotal */
-	for (int i = 0; i < seTotal; ++i) {
-		ServerInfo *srv = &seInfo[i];
-		if (srv->fd != INVALID_SOCKET) {
-			if (FD_ISSET_EXT(srv->fd, readServerfds)) {
-				handleAccept(srv);
-                //printf("handleAccept running\n");
-			}
-		}
-	}
-    //printf("flag6\n");
     close(fdctl_client[0]);
-    lkl_sys_close(fdctl_server[0]);
     lkl_sys_close(fdctl_server[1]);
-    return serverArg;
+    //return serverArg;
 }
 
 int main(int argc, char *argv[])
@@ -787,27 +732,11 @@ static void selectPass(void) {
 		}
 	}
 
-    //fd_set rdset;
-    //int maxfdP = 2;
-
-    //close(fdctl_client[0]);
-    //close(fdctl_client[1]);
-    //lkl_sys_close(fdctl_server[0]);
-    //lkl_sys_close(fdctl_server[1]);
     pipe(fdctl_client);
     int ret = lkl_sys_pipe2(fdctl_server, 0); //LKL_O_NONBLOCK
 	if (ret) {
 		printf("pipe2: %s", lkl_strerror(ret));
 	}
-    //printf("aa: fdctl_server[1]=%d\n", fdctl_server[1]);
-    //if(fdctl_client[1] > fdctl_server[1]){
-    //    maxfdP = fdctl_client[1];
-    //} else {
-    //    maxfdP = fdctl_server[1];
-    //}
-    //FD_ZERO( &rdset);
-    //FD_SET( fdctl_client[1], &rdset);
-    //FD_SET( fdctl_server[1], &rdset);
 
     pthread_t ctid, stid;
     struct pthread_arg clientArg = {maxfd, readfds, writefds};
@@ -817,62 +746,38 @@ static void selectPass(void) {
     pthread_join(ctid, NULL);
     pthread_join(stid, NULL);
 
-    //select(maxfdP + 1, &rdset, 0, 0, 0);
-    //printf("ok\n");
-
-    //if(FD_ISSET(fdctl_client[1], &rdset)){
-    //    pthread_cancel(stid);
-    //} else {
-    //    pthread_cancel(ctid);
-    //}
-
-    //select( maxfd+1, &rdset, 0, 0, 0 );
-    //printf("maxfd=%d\n", maxfd);
-
-    //struct timeval timeout;
-    //timeout.tv_sec = 0;
-    //timeout.tv_usec = 10000;
-	//select(maxfd + 1, readfds, writefds, 0, &timeout);
-	////lkl_sys_select(maxfd + 1, readServerfds, writeServerfds, 0, 0);
-    ////printf("lkl_sys_select running\n");
-    //timeout.tv_sec = 0;
-    //timeout.tv_usec = 10000;
-    //lkl_call(__lkl__NR_select, 5, maxfd + 1, readServerfds, writeServerfds, 0, &timeout);
-
-    //printf("lkl_sys_select run\n");
-	//for (int i = 0; i < coTotal; ++i) {
-	//	ConnectionInfo *cnx = &coInfo[i];
-	//	if (cnx->remote.fd != INVALID_SOCKET) {
-	//		if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
-	//			handleServerRead(cnx, &cnx->remote, &cnx->local);
-	//		}
-	//	}
-	//	if (cnx->remote.fd != INVALID_SOCKET) {
-	//		if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
-	//			handleServerWrite(cnx, &cnx->remote, &cnx->local);
-	//		}
-	//	}
-	//	if (cnx->local.fd != INVALID_SOCKET) {
-	//		if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
-	//			handleRead(cnx, &cnx->local, &cnx->remote);
-	//		}
-	//	}
-	//	if (cnx->local.fd != INVALID_SOCKET) {
-	//		if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
-	//			handleWrite(cnx, &cnx->local, &cnx->remote);
-	//		}
-	//	}
-	//}
+	for (int i = 0; i < coTotal; ++i) {
+		ConnectionInfo *cnx = &coInfo[i];
+		if (cnx->remote.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->remote.fd, readServerfds)) {
+				handleServerRead(cnx, &cnx->remote, &cnx->local);
+			}
+		}
+		if (cnx->remote.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->remote.fd, writeServerfds)) {
+				handleServerWrite(cnx, &cnx->remote, &cnx->local);
+			}
+		}
+		if (cnx->local.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->local.fd, readfds)) {
+				handleRead(cnx, &cnx->local, &cnx->remote);
+			}
+		}
+		if (cnx->local.fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(cnx->local.fd, writefds)) {
+				handleWrite(cnx, &cnx->local, &cnx->remote);
+			}
+		}
+	}
 	/* Handle servers last because handleAccept() may modify coTotal */
-	//for (int i = 0; i < seTotal; ++i) {
-	//	ServerInfo *srv = &seInfo[i];
-	//	if (srv->fd != INVALID_SOCKET) {
-	//		if (FD_ISSET_EXT(srv->fd, readServerfds)) {
-	//			handleAccept(srv);
-    //            //printf("handleAccept running\n");
-	//		}
-	//	}
-	//}
+	for (int i = 0; i < seTotal; ++i) {
+		ServerInfo *srv = &seInfo[i];
+		if (srv->fd != INVALID_SOCKET) {
+			if (FD_ISSET_EXT(srv->fd, readServerfds)) {
+				handleAccept(srv);
+			}
+		}
+	}
 }
 
 static void handleServerRead(ConnectionInfo *cnx, Socket *socket, Socket *other_socket)
@@ -1649,7 +1554,7 @@ static int test_net_init(int argc, char **argv)
 	lkl_sys_close(sock);
 
     char qdisc_entries[] = "root|fq";
-    char sysctls[] = "net.ipv4.tcp_congestion_control=bbr";
+    char sysctls[] = "net.ipv4.tcp_congestion_control=bbr;net.ipv4.tcp_wmem=4096 16384 60000000";
 
 	if (nd_ifindex >= 0)
 		lkl_qdisc_parse_add(nd_ifindex, qdisc_entries);
