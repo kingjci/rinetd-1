@@ -237,7 +237,7 @@ struct pthread_arg {
 #	define FD_ISSET_EXT(fd, ar) FD_ISSET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
 void *clientSelect(void *arg){
 
-    printf("flag3\n");
+    //printf("flag3\n");
     // block mode
     struct pthread_arg *clientArg = arg;
     int maxfdClient = clientArg->maxfd;
@@ -248,7 +248,7 @@ void *clientSelect(void *arg){
     }
     FD_SET(fdctl_client[1], readfds);
 	select(maxfdClient + 1, readfds, writefds, 0, 0);
-    printf("flag4\n");
+    //printf("flag4\n");
     if(FD_ISSET(fdctl_client[1], readfds)){
         close(fdctl_client[1]);
         return clientArg;
@@ -277,23 +277,23 @@ void *serverSelect(void *arg){
     // block mode
     struct pthread_arg *serverArg = arg;
     int maxfdServer = serverArg->maxfd;
-    printf("flag8\n");
+    //printf("flag8\n");
     fd_set *readServerfds = serverArg->readfds;
     fd_set *writeServerfds = serverArg->writefds;
-    printf("flag9\n");
-    printf("fdctl_server[1]=%d\n", fdctl_server[1]);
+    //printf("flag9\n");
+    //printf("fdctl_server[1]=%d\n", fdctl_server[1]);
     if(fdctl_server[1] > maxfdServer){
         maxfdServer = fdctl_server[1];
     }
-    printf("flag5\n");
+    //printf("flag5\n");
     FD_SET(fdctl_server[1], readServerfds);
-    printf("flag7\n");
+    //printf("flag7\n");
     lkl_call(__lkl__NR_select, 5, maxfdServer + 1, readServerfds, writeServerfds, 0, 0);
     if(FD_ISSET(fdctl_server[1], readServerfds)){
         lkl_sys_close(fdctl_server[1]);
         return serverArg;
     }
-    printf("flag10\n");
+    //printf("flag10\n");
 	for (int i = 0; i < coTotal; ++i) {
 		ConnectionInfo *cnx = &coInfo[i];
 		if (cnx->remote.fd != INVALID_SOCKET) {
@@ -317,7 +317,7 @@ void *serverSelect(void *arg){
 			}
 		}
 	}
-    printf("flag6\n");
+    //printf("flag6\n");
     close(fdctl_client[0]);
     lkl_sys_close(fdctl_server[0]);
     lkl_sys_close(fdctl_server[1]);
@@ -790,10 +790,10 @@ static void selectPass(void) {
     //fd_set rdset;
     //int maxfdP = 2;
 
-    close(fdctl_client[0]);
-    close(fdctl_client[1]);
-    lkl_sys_close(fdctl_server[0]);
-    lkl_sys_close(fdctl_server[1]);
+    //close(fdctl_client[0]);
+    //close(fdctl_client[1]);
+    //lkl_sys_close(fdctl_server[0]);
+    //lkl_sys_close(fdctl_server[1]);
     pipe(fdctl_client);
     int ret = lkl_sys_pipe2(fdctl_server, 0); //LKL_O_NONBLOCK
 	if (ret) {
