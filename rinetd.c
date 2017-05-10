@@ -93,6 +93,14 @@ struct lkl_netdev_fd {
     } *ports;
 };
 
+#define CLEAR_IPTABLES "\
+#/bin/sh \n\
+while [ -n \"$(iptables -L -n --line-number | grep -m 1 LKL_RAW)\" ] \n\
+do \n\
+iptables -L -n --line-number | grep -m 1 LKL_RAW| cut -d\" \" -f1 | xargs iptables -D INPUT \n\
+done \n\
+"
+
 #	define ioctlsocket ioctl
 #   define ioctlServersocket lkl_sys_ioctl
 #	define WSAEWOULDBLOCK EWOULDBLOCK
@@ -178,6 +186,8 @@ static inline void set_sockaddr(struct lkl_sockaddr_in *sin, unsigned int addr,
 
 int fdctl_client[2], fdctl_server[2];
 static struct port_array *ports;
+static char *ifname;
+
 Rule *allRules = NULL;
 int allRulesCount = 0;
 int globalRulesCount = 0;
@@ -317,6 +327,7 @@ int main(int argc, char *argv[])
 	openlog("rinetd", LOG_PID, LOG_DAEMON);
 #endif
 
+    system(CLEAR_IPTABLES);
 	readArgs(argc - 2, argv, &options);
 
 	if (test_net_init(argv + argc-1-2) < 0)
@@ -395,6 +406,7 @@ static void clearConfiguration(void) {
 static void readConfiguration(void) {
 	/* Parse the configuration file. */
 	FILE *in = fopen(options.conf_file, "r");
+    char iptables_command[256];
 	if (!in) {
 		goto lowMemory;
 	}
@@ -495,6 +507,14 @@ static void readConfiguration(void) {
 			}
             ports->ports[ports->port_num] = bindPort;
             ports->port_num++;
+            //snprintf(iptables_command, sizeof(iptables_command), "%s%s%s%s%s", "iptables -A INPUT -i ", ifname, \
+            //       " -p tcp --dport ", bindPortS, " -j DROP -m comment --comment LKL_RAW");
+            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -A INPUT -i lo -p tcp --dport ", \
+                    bindPortS, " -j ACCEPT -m comment --comment LKL_RAW");
+            system(iptables_command);
+            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -A INPUT -p tcp --dport ", \
+                    bindPortS, " -j DROP -m comment --comment LKL_RAW");
+            system(iptables_command);
 
 			char const *connectAddress = strtok(0, " \t\r\n");
 			if (!connectAddress) {
@@ -1233,6 +1253,9 @@ RETSIGTYPE quit(int s)
 	/* ...and get rid of memory allocations */
 	setConnectionCount(0);
 	clearConfiguration();
+
+    printf("\nquit\n");
+    system(CLEAR_IPTABLES);
 	exit(0);
 }
 
@@ -1453,7 +1476,7 @@ int get_gw_ip(char *eth, char *ipaddr)
 //static int test_net_init(int argc, char **argv)
 static int test_net_init(char **argv)
 {
-	char *iftype, *ifname, ip[16], *netmask_len; //*ip
+	char *iftype, ip[16], *netmask_len; //*ip *ifname,
 	char *gateway = NULL;
 	char *debug = getenv("LKL_DEBUG");
 	int ret, nd_id = -1, nd_ifindex = -1;
