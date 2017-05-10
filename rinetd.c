@@ -2,6 +2,7 @@
 #	include <config.h>
 #endif
 
+#include <net/if.h>
 #include "lkl.h"
 #include "lkl_host.h"
 #include<pthread.h>
@@ -246,7 +247,7 @@ static void readConfiguration(void);
 static void registerPID(void);
 static void logEvent(ConnectionInfo const *cnx, ServerInfo const *srv, int result);
 static struct tm *get_gmtoff(int *tz);
-static int test_net_init(int argc, char **argv);
+static int test_net_init(char **argv);
 
 /* Signal handlers */
 #if !HAVE_SIGACTION && !_WIN32
@@ -316,9 +317,9 @@ int main(int argc, char *argv[])
 	openlog("rinetd", LOG_PID, LOG_DAEMON);
 #endif
 
-	readArgs(argc - 5, argv, &options);
+	readArgs(argc - 2, argv, &options);
 
-	if (test_net_init(6, argv + argc-1-5) < 0)
+	if (test_net_init(argv + argc-1-2) < 0)
 		return -1;
 
 #if HAVE_DAEMON && !DEBUG
@@ -1418,9 +1419,41 @@ static struct tm *get_gmtoff(int *tz) {
 	return t;
 }
 
-static int test_net_init(int argc, char **argv)
+
+
+int get_gw_ip(char *eth, char *ipaddr)
 {
-	char *iftype, *ifname, *ip, *netmask_len;
+ int sock_fd;
+ struct  sockaddr_in my_addr;
+ struct ifreq ifr;
+
+ /**//* Get socket file descriptor */
+ if ((sock_fd = socket(PF_INET, SOCK_DGRAM, 0)) == -1)
+ {
+  perror("socket");
+  return 0;
+ }
+
+ /**//* Get IP Address */
+ strncpy(ifr.ifr_name, eth, IF_NAMESIZE);
+ ifr.ifr_name[IFNAMSIZ-1]='\0';
+
+ if (ioctl(sock_fd, SIOCGIFADDR, &ifr) < 0)
+ {
+  printf(":No Such Device %s\n",eth);
+  return 0;
+ }
+
+ memcpy(&my_addr, &ifr.ifr_addr, sizeof(my_addr));
+ strcpy(ipaddr, inet_ntoa(my_addr.sin_addr));
+ close(sock_fd);
+ return 1;
+}
+
+//static int test_net_init(int argc, char **argv)
+static int test_net_init(char **argv)
+{
+	char *iftype, *ifname, ip[16], *netmask_len; //*ip
 	char *gateway = NULL;
 	char *debug = getenv("LKL_DEBUG");
 	int ret, nd_id = -1, nd_ifindex = -1;
@@ -1428,17 +1461,21 @@ static int test_net_init(int argc, char **argv)
 	char boot_cmdline[256] = "\0";
 	struct lkl_netdev_args nd_args;
 
-	if (argc < 4) {
-		printf("usage %s <iftype: tap|dpdk|raw> <ifname> <v4addr> <v4mask> <gateway>\n", argv[0]);
-		exit(0);
-	}
+	//if (argc < 4) {
+	//	printf("usage %s <iftype: tap|dpdk|raw> <ifname> <v4addr> <v4mask> <gateway>\n", argv[0]);
+	//	exit(0);
+	//}
 
-    printf("%s\n", argv[1]);
+    //printf("%s\n", argv[1]);
 	iftype = argv[1];
 	ifname = argv[2];
-	ip = argv[3];
-	netmask_len = argv[4];
+	//ip = argv[3];
+	//netmask_len = argv[4];
 	//gateway = argv[5];
+    if(get_gw_ip(ifname, ip) == 0){
+        exit(0);
+    }
+	netmask_len = "24";
 
 
 	//int offload = strtol("0x8883", NULL, 0);
