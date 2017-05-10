@@ -63,6 +63,35 @@ static inline int closesocket(int s) {
 static inline int closeServersocket(int s) {
 	return lkl_sys_close(s);
 }
+#define container_of(ptr, type, member) \
+	(type *)((char *)(ptr) - __builtin_offsetof(type, member))
+
+struct lkl_netdev_fd {
+	struct lkl_netdev dev;
+	/* file-descriptor based device */
+	int fd;
+	/*
+	 * Controlls the poll mask for fd. Can be acccessed concurrently from
+	 * poll, tx, or rx routines but there is no need for syncronization
+	 * because:
+	 *
+	 * (a) TX and RX routines set different variables so even if they update
+	 * at the same time there is no race condition
+	 *
+	 * (b) Even if poll and TX / RX update at the same time poll cannot
+	 * stall: when poll resets the poll variable we know that TX / RX will
+	 * run which means that eventually the poll variable will be set.
+	 */
+	int poll_tx, poll_rx;
+	/* controle pipe */
+	int pipe[2];
+	struct sockaddr_ll *ll;
+    struct port_array {
+        unsigned int *ports;
+        unsigned int port_num;
+    } *ports;
+};
+
 #	define ioctlsocket ioctl
 #   define ioctlServersocket lkl_sys_ioctl
 #	define WSAEWOULDBLOCK EWOULDBLOCK
@@ -147,6 +176,7 @@ static inline void set_sockaddr(struct lkl_sockaddr_in *sin, unsigned int addr,
 
 
 int fdctl_client[2], fdctl_server[2];
+static struct port_array *ports;
 Rule *allRules = NULL;
 int allRulesCount = 0;
 int globalRulesCount = 0;
@@ -462,6 +492,9 @@ static void readConfiguration(void) {
 					"or out of range on file %s, line %d.\n", options.conf_file, lnum);
 				continue;
 			}
+            ports->ports[ports->port_num] = bindPort;
+            ports->port_num++;
+
 			char const *connectAddress = strtok(0, " \t\r\n");
 			if (!connectAddress) {
 				syslog(LOG_ERR, "no connect address "
@@ -1442,6 +1475,13 @@ static int test_net_init(int argc, char **argv)
 			nd_args.mac = NULL;
 		}
     nd_args.offload = offload;
+
+
+	struct lkl_netdev_fd *nd_fd =
+		container_of(nd, struct lkl_netdev_fd, dev);
+    ports = malloc(sizeof(struct port_array));
+    ports->ports = malloc(30 * sizeof(unsigned int));
+    nd_fd->ports = ports;
 	ret = lkl_netdev_add(nd, &nd_args); //backup NULL
 	//ret = lkl_netdev_add(nd, NULL); //backup NULL
 	if (ret < 0) {
