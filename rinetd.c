@@ -6,6 +6,7 @@
 #include "lkl.h"
 #include "lkl_host.h"
 #include<pthread.h>
+#include "thpool.h"
 
 #ifndef RETSIGTYPE
 #	define RETSIGTYPE void
@@ -187,6 +188,7 @@ static inline void set_sockaddr(struct lkl_sockaddr_in *sin, unsigned int addr,
 int fdctl_client[2], fdctl_server[2];
 static struct port_array *ports;
 static char *ifname;
+static threadpool thpool;
 
 Rule *allRules = NULL;
 int allRulesCount = 0;
@@ -276,7 +278,7 @@ struct pthread_arg {
 };
 
 #	define FD_ISSET_EXT(fd, ar) FD_ISSET((fd) % FD_SETSIZE, &(ar)[(fd) / FD_SETSIZE])
-void *clientSelect(void *arg){
+void clientSelect(void *arg){
 
     // block mode
     struct pthread_arg *clientArg = arg;
@@ -293,7 +295,7 @@ void *clientSelect(void *arg){
     //return clientArg;
 }
 
-void *serverSelect(void *arg){
+void serverSelect(void *arg){
 
     // block mode
     struct pthread_arg *serverArg = arg;
@@ -328,6 +330,7 @@ int main(int argc, char *argv[])
 #endif
 
     system(CLEAR_IPTABLES);
+    thpool = thpool_init(2);
 	readArgs(argc - 2, argv, &options);
 
 	if (test_net_init(argv + argc-1-2) < 0)
@@ -792,13 +795,11 @@ static void selectPass(void) {
 		printf("pipe2: %s", lkl_strerror(ret));
 	}
 
-    pthread_t ctid, stid;
     struct pthread_arg clientArg = {maxfd, readfds, writefds};
     struct pthread_arg serverArg = {maxfd, readServerfds, writeServerfds};
-    pthread_create( &ctid, NULL, clientSelect, &clientArg);
-    pthread_create( &stid, NULL, serverSelect, &serverArg);
-    pthread_join(ctid, NULL);
-    pthread_join(stid, NULL);
+    thpool_add_work(thpool, clientSelect, (void *)&clientArg);
+    thpool_add_work(thpool, serverSelect, (void *)&serverArg);
+    thpool_wait(thpool);
 
 	for (int i = 0; i < coTotal; ++i) {
 		ConnectionInfo *cnx = &coInfo[i];
