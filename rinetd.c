@@ -1654,13 +1654,13 @@ static int test_net_init(char **argv)
 
 	lkl_sys_close(sock);
 
-    char qdisc_entries[] = "root|fq";
+    //char qdisc_entries[] = "root|fq";
     //char sysctls[] = "net.core.default_qdisc=fq;net.ipv4.tcp_congestion_control=bbr;net.ipv4.tcp_wmem=4096 16384 60000000";
     //char sysctls[] = "net.core.default_qdisc=fq_codel;net.ipv4.tcp_congestion_control=TA;net.ipv4.tcp_wmem=4096 16384 60000000";
     char sysctls[] = "net.ipv4.tcp_wmem=4096 16384 60000000";
 
-	if (nd_ifindex >= 0)
-		lkl_qdisc_parse_add(nd_ifindex, qdisc_entries);
+	//if (nd_ifindex >= 0)
+	//	lkl_qdisc_parse_add(nd_ifindex, qdisc_entries);
 
 	lkl_sysctl_parse_write(sysctls);
 
