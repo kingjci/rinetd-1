@@ -512,10 +512,10 @@ static void readConfiguration(void) {
             ports->port_num++;
             //snprintf(iptables_command, sizeof(iptables_command), "%s%s%s%s%s", "iptables -A INPUT -i ", ifname, \
             //       " -p tcp --dport ", bindPortS, " -j DROP -m comment --comment LKL_RAW");
-            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -A INPUT -i lo -p tcp --dport ", \
+            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -I INPUT 1 -i lo -p tcp --dport ", \
                     bindPortS, " -j ACCEPT -m comment --comment LKL_RAW");
             system(iptables_command);
-            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -A INPUT -p tcp --dport ", \
+            snprintf(iptables_command, sizeof(iptables_command), "%s%s%s", "iptables -I INPUT 2 -p tcp --dport ", \
                     bindPortS, " -j DROP -m comment --comment LKL_RAW");
             system(iptables_command);
 
