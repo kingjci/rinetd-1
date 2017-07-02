@@ -14,4 +14,4 @@ gcc -DHAVE_CONFIG_H -I.    -std=c99 -D_XOPEN_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOU
 gcc -DHAVE_CONFIG_H -I.    -std=c99 -D_XOPEN_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wwrite-strings -I. -g -O2 -MT rinetd-thpool.o -MD -MP -MF .deps/rinetd-thpool.Tpo -c -o rinetd-thpool.o `test -f 'thpool.c' || echo './'`thpool.c
 rm -f rinetd
 ld -r -o rinetd-rinetd-in.o rinetd-rinetd.o
-gcc -std=c99 -D_XOPEN_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wwrite-strings -I. -I/home/vagrant/lkl/linux/tools/lkl/include  -g -O2   -o rinetd rinetd-rinetd-in.o rinetd-match.o rinetd-thpool.o /home/vagrant/lkl/linux/tools/lkl/liblkl.a -lrt -lpthread
+gcc -static -std=c99 -D_XOPEN_SOURCE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wwrite-strings -I. -I/home/vagrant/lkl/linux/tools/lkl/include  -g -O2   -o rinetd rinetd-rinetd-in.o rinetd-match.o rinetd-thpool.o /home/vagrant/lkl/linux/tools/lkl/liblkl.a -lrt -lpthread
